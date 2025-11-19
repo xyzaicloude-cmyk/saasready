@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Callable
 from fastapi import Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
 from .database import get_db
@@ -6,6 +6,7 @@ from .security import decode_access_token
 from ..models.user import User
 from ..models.membership import Membership
 from ..services.rbac_service import RBACService
+from ..services.feature_flag_service import feature_flag_service
 
 
 def get_current_user(
@@ -76,3 +77,37 @@ def require_permission(permission_name: str):
         return membership
 
     return permission_checker
+
+
+def feature_flag_enabled(flag_key: str) -> Callable:
+    """
+    Dependency to check if a feature flag is enabled for current org.
+    Returns the boolean value without blocking the request.
+    """
+    def _check(
+            org_id: str,  # Changed from UUID to str
+            db: Session = Depends(get_db)  # Changed from AsyncSession to Session
+    ) -> bool:
+        return feature_flag_service.is_feature_enabled(org_id, flag_key, db)  # Removed await
+
+    return _check
+
+
+def require_feature_flag(flag_key: str) -> Callable:
+    """
+    Dependency that blocks request if feature flag is not enabled for current org.
+    Raises 403 if feature is disabled.
+    """
+    def _require(
+            org_id: str,  # Changed from UUID to str
+            db: Session = Depends(get_db)  # Changed from AsyncSession to Session
+    ) -> bool:
+        enabled = feature_flag_service.is_feature_enabled(org_id, flag_key, db)  # Removed await
+        if not enabled:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Feature '{flag_key}' is not enabled for this organization"
+            )
+        return True
+
+    return _require

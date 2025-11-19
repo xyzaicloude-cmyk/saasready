@@ -6,6 +6,8 @@ import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import OrgSwitcher from '@/components/OrgSwitcher';
 import MembersList from '@/components/MembersList';
+import OrgNavTabs from '@/components/OrgNavTabs';
+
 import { api } from '@/lib/api';
 
 export default function MembersPage() {

@@ -18,6 +18,10 @@ from app.models.audit_log import AuditLog
 from app.models.org_settings import OrgSettings
 from app.models.api_key import APIKey
 from app.models.sso_connection import SSOConnection
+from app.models.feature_flag import FeatureFlag, OrgFeatureFlag  # ADD THIS LINE
+
+print("✅ All models imported successfully")
+
 config = context.config
 
 if config.config_file_name is not None:

@@ -63,3 +63,13 @@ export interface InviteUserRequest {
   role_id: string;
   full_name?: string;
 }
+
+export interface FeatureFlag {
+  key: string;
+  name: string;
+  description: string | null;
+  default_enabled: boolean;
+  enabled: boolean;
+  overridden: boolean;
+  rollout_percent: number | null;
+}
