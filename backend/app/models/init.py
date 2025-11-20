@@ -7,6 +7,8 @@ from .permission import Permission,RolePermission
 from .audit_log import AuditLog
 from .org_settings import OrgSettings
 from .sso_connection import SSOConnection
+from .feature_flag import FeatureFlag, OrgFeatureFlag  # NEW
+
 # Remove APIKey reference since we don't have that model yet
 
 __all__ = [
@@ -19,4 +21,6 @@ __all__ = [
     "AuditLog",
     "OrgSettings",
     "SSOConnection",
+    "FeatureFlag",  # NEW
+    "OrgFeatureFlag"
 ]

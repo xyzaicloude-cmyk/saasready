@@ -73,3 +73,11 @@ export interface FeatureFlag {
   overridden: boolean;
   rollout_percent: number | null;
 }
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string | null;
+  is_system: boolean;
+  created_at: string;
+}

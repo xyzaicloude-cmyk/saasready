@@ -9,6 +9,7 @@ import MembersList from '@/components/MembersList';
 import OrgNavTabs from '@/components/OrgNavTabs';
 
 import { api } from '@/lib/api';
+import type { Role } from '@/lib/types';
 
 export default function MembersPage() {
   const params = useParams();
@@ -17,32 +18,54 @@ export default function MembersPage() {
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [roleId, setRoleId] = useState('');
+  const [roles, setRoles] = useState<Role[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [loadingRoles, setLoadingRoles] = useState(false);
 
-// In your members page.tsx, update the handleInvite function:
-const handleInvite = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError('');
-  setSuccess('');
+  useEffect(() => {
+    if (showInviteForm && roles.length === 0) {
+      fetchRoles();
+    }
+  }, [showInviteForm]);
 
-  try {
-    await api.inviteUser(orgId, {
-      email,
-      role_id: roleId,
-      full_name: fullName || undefined
-    });
-    setSuccess('User invited successfully!');
-    setEmail('');
-    setFullName('');
-    setRoleId('');
-    setShowInviteForm(false);
-    setRefreshKey((prev) => prev + 1);
-  } catch (err: any) {
-    setError(err.response?.data?.detail || 'Failed to invite user');
-  }
-};
+  const fetchRoles = async () => {
+    setLoadingRoles(true);
+    try {
+      const rolesData = await api.getRoles(orgId);
+      setRoles(rolesData);
+      if (rolesData.length > 0) {
+        setRoleId(rolesData[0].id);
+      }
+    } catch (err: any) {
+      setError('Failed to load roles');
+    } finally {
+      setLoadingRoles(false);
+    }
+  };
+
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    try {
+      await api.inviteUser(orgId, {
+        email,
+        role_id: roleId,
+        full_name: fullName || undefined
+      });
+      setSuccess('User invited successfully!');
+      setEmail('');
+      setFullName('');
+      setRoleId(roles.length > 0 ? roles[0].id : '');
+      setShowInviteForm(false);
+      setRefreshKey((prev) => prev + 1);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to invite user');
+    }
+  };
 
   return (
     <ProtectedRoute>
@@ -106,24 +129,37 @@ const handleInvite = async (e: React.FormEvent) => {
                   </div>
                   <div>
                     <label htmlFor="roleId" className="block text-sm font-medium text-gray-700 mb-1">
-                      Role ID
+                      Role
                     </label>
-                    <input
-                      type="text"
-                      id="roleId"
-                      value={roleId}
-                      onChange={(e) => setRoleId(e.target.value)}
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                      placeholder="Enter role ID"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Note: In production, this would be a dropdown with available roles
-                    </p>
+                    {loadingRoles ? (
+                      <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
+                        Loading roles...
+                      </div>
+                    ) : roles.length > 0 ? (
+                      <select
+                        id="roleId"
+                        value={roleId}
+                        onChange={(e) => setRoleId(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      >
+                        {roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                            {role.description && ` - ${role.description}`}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
+                        No roles available
+                      </div>
+                    )}
                   </div>
                   <button
                     type="submit"
-                    className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                    disabled={loadingRoles || roles.length === 0}
+                    className="bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md text-sm font-medium"
                   >
                     Send Invite
                   </button>

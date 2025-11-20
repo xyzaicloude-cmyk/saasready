@@ -9,10 +9,11 @@ class Permission(Base):
     __tablename__ = "permissions"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String, nullable=False, unique=True)
+    key = Column(String, nullable=False, unique=True)  # Added: e.g., "org.update"
+    name = Column(String, nullable=False)
     description = Column(Text, nullable=True)
-    resource = Column(String, nullable=False)
-    action = Column(String, nullable=False)
+    resource = Column(String, nullable=False)  # e.g., "org", "user", "audit"
+    action = Column(String, nullable=False)    # e.g., "update", "invite", "read"
     created_at = Column(DateTime, default=datetime.utcnow)
 
     role_permissions = relationship("RolePermission", back_populates="permission", cascade="all, delete-orphan")

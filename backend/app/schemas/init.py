@@ -4,6 +4,13 @@ from .membership import MembershipResponse, MembershipUpdate, InviteUserRequest
 from .auth import TokenResponse, LoginRequest, RegisterRequest
 from .audit_log import AuditLogResponse
 from .common import MessageResponse
+from .feature_flag import (  # NEW
+    FeatureFlagCreate,
+    FeatureFlagUpdate,
+    FeatureFlagResponse,
+    OrgFeatureFlagOverride,
+    OrgFeatureFlagResponse,
+)
 
 __all__ = [
     "UserCreate",
@@ -20,4 +27,9 @@ __all__ = [
     "RegisterRequest",
     "AuditLogResponse",
     "MessageResponse",
+    "FeatureFlagCreate",
+    "FeatureFlagUpdate",
+    "FeatureFlagResponse",
+    "OrgFeatureFlagOverride",
+    "OrgFeatureFlagResponse",
 ]

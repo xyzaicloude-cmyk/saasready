@@ -9,7 +9,8 @@ import type {
   RegisterRequest,
   TokenResponse,
   InviteUserRequest,
-  FeatureFlag
+  FeatureFlag,
+  Role
 } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -172,6 +173,11 @@ class ApiClient {
     const response = await this.client.delete<FeatureFlag>(
       `/orgs/${orgId}/feature-flags/${flagKey}`
     );
+    return response.data;
+  }
+
+  async getRoles(orgId: string): Promise<Role[]> {
+    const response = await this.client.get<Role[]>(`/orgs/${orgId}/roles`);
     return response.data;
   }
 }

@@ -58,6 +58,16 @@ def upgrade() -> None:
             (gen_random_uuid()::text, 'api-v2', 'API v2', 'Enable access to API version 2', false)
     """)
 
+    op.add_column('permissions', sa.Column('key', sa.String(), nullable=True))
+    op.execute("""
+        UPDATE permissions 
+        SET key = LOWER(REPLACE(name, ' ', '.'))
+        WHERE key IS NULL
+    """)
+
+    op.alter_column('permissions', 'key', nullable=False)
+    op.create_unique_constraint('uq_permissions_key', 'permissions', ['key'])
+
 
 def downgrade() -> None:
     op.drop_index('ix_org_feature_flags_feature_flag_id', table_name='org_feature_flags')
@@ -65,3 +75,5 @@ def downgrade() -> None:
     op.drop_table('org_feature_flags')
     op.drop_index('ix_feature_flags_key', table_name='feature_flags')
     op.drop_table('feature_flags')
+    op.drop_constraint('uq_permissions_key', 'permissions', type_='unique')
+    op.drop_column('permissions', 'key')
