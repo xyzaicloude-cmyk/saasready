@@ -2,14 +2,13 @@ from pydantic import BaseModel, EmailStr
 from uuid import UUID
 from typing import Optional
 
-
 class InviteUserRequest(BaseModel):
     email: EmailStr
-    role_id: UUID
+    role_id: str  # ← Change from UUID to str
+    full_name: Optional[str] = None
 
     class Config:
         from_attributes = True
-
 
 class InvitationResponse(BaseModel):
     id: UUID

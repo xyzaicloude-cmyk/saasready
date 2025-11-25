@@ -2,21 +2,41 @@ from sqlalchemy.orm import Session
 from ..models.membership import Membership
 from ..models.role import Role
 from ..models.permission import Permission, RolePermission
+from typing import List, Dict
 
 
 class RBACService:
     def __init__(self, db: Session):
         self.db = db
+        self.role_hierarchy = {"owner": 4, "admin": 3, "manager": 2, "member": 1}
+
+    def _get_role_level(self, role_name: str) -> int:
+        """Get hierarchy level for role"""
+        if not role_name:
+            return 0
+        return self.role_hierarchy.get(role_name.lower(), 0)
+
+    def can_manage_role(self, actor_role: Role, target_role: Role) -> bool:
+        """Enterprise: Check if actor can manage target role"""
+        if not actor_role or not target_role:
+            return False
+
+        actor_level = self._get_role_level(actor_role.name)
+        target_level = self._get_role_level(target_role.name)
+
+        # Edge case: Owners can manage any role including other owners
+        if actor_role.name.lower() == "owner":
+            return True
+
+        return actor_level > target_level  # Strictly greater to prevent self-demotion
 
     def has_permission(self, membership: Membership, permission_key: str) -> bool:
         """
         Check if a membership has a specific permission through their role.
-        Uses permission.key instead of permission.name for lookup.
         """
         if not membership.role_id:
             return False
 
-        # Query permission by key (not name)
         permission = self.db.query(Permission).filter(
             Permission.key == permission_key
         ).first()
@@ -24,7 +44,6 @@ class RBACService:
         if not permission:
             return False
 
-        # Check if role has this permission
         role_permission = self.db.query(RolePermission).filter(
             RolePermission.role_id == membership.role_id,
             RolePermission.permission_id == permission.id
@@ -32,10 +51,9 @@ class RBACService:
 
         return role_permission is not None
 
-    def get_user_permissions(self, membership: Membership) -> list[str]:
+    def get_user_permissions(self, membership: Membership) -> List[str]:
         """
-        Get all permission keys (not names) for a membership's role.
-        Returns list of permission keys like ['org.update', 'user.invite'].
+        Get all permission keys for a membership's role.
         """
         if not membership.role_id:
             return []
@@ -49,8 +67,18 @@ class RBACService:
             Permission.id.in_(permission_ids)
         ).all()
 
-        # Return keys instead of names
         return [p.key for p in permissions]
+
+    def get_role_permission_matrix(self) -> Dict[str, List[str]]:
+        """Enterprise: Get matrix of roles and their permissions"""
+        roles = self.db.query(Role).all()
+        matrix = {}
+
+        for role in roles:
+            permissions = self.get_role_permissions(role.id)
+            matrix[role.name] = [p.key for p in permissions]
+
+        return matrix
 
     def assign_role_to_membership(self, membership_id: str, role_id: str):
         """Assign a role to a membership."""
@@ -65,7 +93,7 @@ class RBACService:
 
         return membership
 
-    def get_role_permissions(self, role_id: str) -> list[Permission]:
+    def get_role_permissions(self, role_id: str) -> List[Permission]:
         """Get all permissions for a specific role."""
         role_permissions = self.db.query(RolePermission).filter(
             RolePermission.role_id == role_id

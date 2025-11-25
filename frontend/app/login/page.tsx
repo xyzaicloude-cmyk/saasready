@@ -23,7 +23,13 @@ export default function LoginPage() {
       authStorage.setToken(response.access_token);
       router.push('/orgs');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed. Please try again.');
+      const errorDetail = err.response?.data?.detail || 'Login failed. Please try again.';
+      setError(errorDetail);
+
+      // If the error is about email verification, show a resend link
+      if (errorDetail.includes('verify your email')) {
+        setError(`${errorDetail} You can request a new verification link below.`);
+      }
     } finally {
       setLoading(false);
     }
@@ -47,6 +53,16 @@ export default function LoginPage() {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
               <p className="text-sm text-red-800">{error}</p>
+              {error.includes('verify your email') && (
+                <div className="mt-2">
+                  <Link
+                    href="/resend-verification"
+                    className="text-sm text-primary-600 hover:text-primary-500 font-medium"
+                  >
+                    Resend verification email
+                  </Link>
+                </div>
+              )}
             </div>
           )}
           <div className="rounded-md shadow-sm -space-y-px">
@@ -81,6 +97,14 @@ export default function LoginPage() {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
               />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <Link href="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
+                Forgot your password?
+              </Link>
             </div>
           </div>
 

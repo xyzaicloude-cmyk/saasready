@@ -81,3 +81,13 @@ export interface Role {
   is_system: boolean;
   created_at: string;
 }
+
+
+export interface AcceptInvitationResponse {
+    message: string;
+    organization: {
+        id: string;
+        name: string;
+        slug: string;
+    };
+}

@@ -14,6 +14,11 @@ class User(Base):
     full_name = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
+    is_email_verified = Column(Boolean, default=False)
+    email_verification_token = Column(String, unique=True, nullable=True)
+    email_verification_sent_at = Column(DateTime, nullable=True)
+    reset_token = Column(String, unique=True, nullable=True)
+    reset_token_expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

@@ -71,7 +71,7 @@ def require_permission(permission_name: str):
         if not rbac_service.has_permission(membership, permission_name):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Missing required permission: {permission_name}"
+                detail=f"Missing required permission"
             )
 
         return membership

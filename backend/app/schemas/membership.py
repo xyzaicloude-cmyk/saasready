@@ -21,7 +21,7 @@ class MembershipUpdate(BaseModel):
 
 class MembershipResponse(BaseModel):
     id: str
-    user_id: str
+    user_id: Optional[str] = None
     organization_id: str
     role_id: Optional[str]
     status: MembershipStatus
@@ -29,6 +29,8 @@ class MembershipResponse(BaseModel):
     user_email: Optional[str] = None
     user_full_name: Optional[str] = None
     role_name: Optional[str] = None
+    invited_email: Optional[str] = None
+    invitation_expires_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

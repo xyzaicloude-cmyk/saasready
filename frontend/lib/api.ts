@@ -75,6 +75,14 @@ class ApiClient {
     return response.data;
   }
 
+  async registerWithInvite(data: RegisterRequest, inviteToken: string): Promise<TokenResponse> {
+    const response = await this.client.post<TokenResponse>(
+      `/auth/register-with-invite?invite_token=${inviteToken}`,
+      data
+    );
+    return response.data;
+  }
+
   async login(data: LoginRequest): Promise<TokenResponse> {
     const response = await this.client.post<TokenResponse>('/auth/login', data);
     return response.data;
@@ -178,6 +186,14 @@ class ApiClient {
 
   async getRoles(orgId: string): Promise<Role[]> {
     const response = await this.client.get<Role[]>(`/orgs/${orgId}/roles`);
+    return response.data;
+  }
+
+  async acceptInvitation(token: string): Promise<{ message: string; organization: any }> {
+    const response = await this.client.post<{ message: string; organization: any }>(
+      '/auth/accept-invitation',
+      { token }
+    );
     return response.data;
   }
 }

@@ -18,7 +18,7 @@ from app.models.audit_log import AuditLog
 from app.models.org_settings import OrgSettings
 from app.models.api_key import APIKey
 from app.models.sso_connection import SSOConnection
-from app.models.feature_flag import FeatureFlag, OrgFeatureFlag  # ADD THIS LINE
+from app.models.feature_flag import FeatureFlag, OrgFeatureFlag
 
 print("✅ All models imported successfully")
 

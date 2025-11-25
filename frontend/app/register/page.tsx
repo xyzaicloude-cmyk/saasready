@@ -1,18 +1,35 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 
-export default function Register() {
+function RegisterContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isInvitedUser, setIsInvitedUser] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Check if there's an invitation token
+    const invitationToken = authStorage.getInvitationToken();
+    const urlEmail = searchParams.get('email');
+
+    if (invitationToken) {
+      console.log('🎯 Invitation token found, user is registering via invitation');
+      setIsInvitedUser(true);
+    }
+
+    if (urlEmail) {
+      setEmail(urlEmail);
+    }
+  }, [searchParams]);
 
   const validateForm = () => {
     if (password.length > 72) {
@@ -37,12 +54,40 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const response = await api.register({ email, password, full_name: fullName });
+      let response;
+      const invitationToken = authStorage.getInvitationToken();
+
+      if (invitationToken) {
+        console.log('📧 Registering with invitation token');
+        response = await api.registerWithInvite({
+          email,
+          password,
+          full_name: fullName
+        }, invitationToken);
+
+        // Remove invitation token after successful registration
+        authStorage.removeInvitationToken();
+      } else {
+        console.log('📧 Standard registration (no invitation)');
+        response = await api.register({
+          email,
+          password,
+          full_name: fullName
+        });
+      }
+
       authStorage.setToken(response.access_token);
       router.push('/orgs');
     } catch (err: any) {
       console.error('Registration error:', err);
       const errorDetail = err.response?.data?.detail;
+
+      // If there's an invitation error, clear the token
+      if (err.response?.status === 400 && authStorage.getInvitationToken()) {
+        authStorage.removeInvitationToken();
+        setIsInvitedUser(false);
+      }
+
       if (errorDetail) {
         setError(`Registration failed: ${errorDetail}`);
       } else {
@@ -58,8 +103,13 @@ export default function Register() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+            {isInvitedUser ? 'Join Organization' : 'Create your account'}
           </h2>
+          {isInvitedUser && (
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Complete your registration to join the organization
+            </p>
+          )}
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
@@ -92,6 +142,7 @@ export default function Register() {
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isInvitedUser} // Prevent changing email for invited users
               />
             </div>
             <div>
@@ -115,6 +166,14 @@ export default function Register() {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
               <p className="text-red-800 text-sm">{error}</p>
+            </div>
+          )}
+
+          {isInvitedUser && (
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+              <p className="text-blue-800 text-sm">
+                You're registering via invitation. You'll be added to the organization automatically.
+              </p>
             </div>
           )}
 
@@ -143,5 +202,22 @@ export default function Register() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function Register() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 text-center">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          </div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <RegisterContent />
+    </Suspense>
   );
 }

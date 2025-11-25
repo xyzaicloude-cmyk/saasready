@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, status
+from fastapi import APIRouter, Depends, Request, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 from ..core.database import get_db
@@ -6,14 +6,15 @@ from ..core.dependencies import get_current_user, require_permission
 from ..schemas.organization import OrganizationCreate, OrganizationResponse, OrganizationUpdate
 from ..schemas.membership import InviteUserRequest, MembershipResponse, MembershipUpdate
 from ..schemas.role import RoleResponse
+from ..schemas.feature_flag import OrgFeatureFlagOverride, OrgFeatureFlagResponse
 from ..services.org_service import OrgService
 from ..services.audit_service import AuditService
+from ..services.feature_flag_service import FeatureFlagService
 from ..models.user import User
 from ..models.membership import Membership
 from ..models.role import Role
 from ..models.organization import Organization
-from ..schemas.feature_flag import OrgFeatureFlagOverride, OrgFeatureFlagResponse
-from ..services.feature_flag_service import FeatureFlagService
+
 router = APIRouter()
 
 
@@ -104,9 +105,28 @@ def list_organization_members(
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
+    """Enterprise: Get organization members with proper invited user handling"""
     org_service = OrgService(db)
     members = org_service.get_organization_members(org_id)
-    return members
+
+    # Convert to proper response - remove is_pending field
+    result = []
+    for member_data in members:
+        result.append(MembershipResponse(
+            id=member_data["id"],
+            user_id=member_data["user_id"],
+            organization_id=member_data["organization_id"],
+            role_id=member_data["role_id"],
+            status=member_data["status"],
+            created_at=member_data["created_at"],
+            user_email=member_data["user_email"],
+            user_full_name=member_data["user_full_name"],
+            role_name=member_data["role_name"],
+            invited_email=member_data["invited_email"],
+            invitation_expires_at=member_data["invitation_expires_at"]
+        ))
+
+    return result
 
 
 @router.get("/{org_id}/roles", response_model=List[RoleResponse])
@@ -125,14 +145,14 @@ def invite_user_to_organization(
         org_id: str,
         data: InviteUserRequest,
         request: Request,
+        background_tasks: BackgroundTasks,
         membership: Membership = Depends(require_permission("user.invite")),
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
-    """Invite a user to the organization. Requires user.invite permission."""
-
+    """Enterprise: Invite user to organization with enhanced validation"""
     org_service = OrgService(db)
-    new_membership = org_service.invite_user(org_id, data)
+    new_membership = org_service.invite_user(org_id, data, inviter=current_user)
 
     audit_service = AuditService(db)
     audit_service.log_event(
@@ -144,12 +164,13 @@ def invite_user_to_organization(
         metadata={
             "invited_email": data.email,
             "role_id": str(data.role_id),
-            "inviter_id": str(current_user.id)
+            "inviter_id": str(current_user.id),
+            "invitation_expires_at": new_membership.invitation_expires_at.isoformat() if new_membership.invitation_expires_at else None
         },
         request=request
     )
 
-    # Fetch user and role for response
+    # ENTERPRISE FIX: Proper response for both existing and new users
     user = db.query(User).filter(User.id == new_membership.user_id).first()
     role = db.query(Role).filter(Role.id == new_membership.role_id).first() if new_membership.role_id else None
 
@@ -160,9 +181,11 @@ def invite_user_to_organization(
         role_id=new_membership.role_id,
         status=new_membership.status,
         created_at=new_membership.created_at,
-        user_email=user.email if user else None,
+        user_email=user.email if user else new_membership.invited_email,
         user_full_name=user.full_name if user else None,
-        role_name=role.name if role else None
+        role_name=role.name if role else None,
+        invited_email=new_membership.invited_email,
+        invitation_expires_at=new_membership.invitation_expires_at
     )
 
 
@@ -193,7 +216,7 @@ def update_member_role(
     old_role_id = target_membership.role_id
 
     org_service = OrgService(db)
-    updated_membership = org_service.update_member_role(membership_id, data.role_id)
+    updated_membership = org_service.update_member_role(membership_id, data.role_id, updater=current_user, org_id=org_id)
 
     audit_service = AuditService(db)
     audit_service.log_event(
@@ -221,9 +244,10 @@ def update_member_role(
         role_id=updated_membership.role_id,
         status=updated_membership.status,
         created_at=updated_membership.created_at,
-        user_email=user.email if user else None,
+        user_email=user.email if user else updated_membership.invited_email,
         user_full_name=user.full_name if user else None,
-        role_name=role.name if role else None
+        role_name=role.name if role else None,
+        invited_email=updated_membership.invited_email
     )
 
 
