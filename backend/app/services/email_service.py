@@ -1,15 +1,54 @@
 import smtplib
 import logging
 import traceback
+import asyncio
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from fastapi import HTTPException, status
+from typing import Optional
+from datetime import datetime, timedelta
+from sqlalchemy import Column, String, Integer, DateTime, Text, JSON
+from sqlalchemy.orm import Session
+import uuid
+from enum import Enum
+
 from ..core.config import settings
+from ..core.database import Base
 
 logger = logging.getLogger(__name__)
 
 
+class EmailStatus(str, Enum):
+    PENDING = "pending"
+    SENDING = "sending"
+    SENT = "sent"
+    FAILED = "failed"
+    RETRY = "retry"
+
+
+class EmailQueue(Base):
+    """Email queue for async processing with retry"""
+    __tablename__ = "email_queue"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    to_email = Column(String, nullable=False)
+    subject = Column(String, nullable=False)
+    html_content = Column(Text, nullable=False)
+    text_content = Column(Text, nullable=True)
+    status = Column(String, default=EmailStatus.PENDING, nullable=False, index=True)
+    attempts = Column(Integer, default=0, nullable=False)
+    max_attempts = Column(Integer, default=3, nullable=False)
+    error_message = Column(Text, nullable=True)
+    metadata_email = Column(JSON, nullable=True)  # Template name, user_id, etc.
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    sent_at = Column(DateTime, nullable=True)
+    next_retry_at = Column(DateTime, nullable=True)
+
+
 class EmailService:
+    """
+    Enterprise-grade email service with async processing and retry mechanism
+    """
     def __init__(self):
         self.smtp_host = settings.EMAIL_SMTP_HOST
         self.smtp_port = settings.EMAIL_SMTP_PORT
@@ -19,8 +58,11 @@ class EmailService:
         self.use_ssl = settings.EMAIL_USE_SSL
         self.from_email = settings.EMAIL_FROM
 
+        # Retry configuration
+        self.retry_delays = [60, 300, 3600]  # 1min, 5min, 1hour
+
         # Log configuration on initialization
-        print("EmailService initialized with configuration:")
+        print("EmailService (Enterprise Async) initialized with configuration:")
         print(f"SMTP Host: {self.smtp_host}")
         print(f"SMTP Port: {self.smtp_port}")
         print(f"SMTP Username: {self.smtp_username}")
@@ -28,104 +70,209 @@ class EmailService:
         print(f"Use SSL: {self.use_ssl}")
         print(f"From Email: {self.from_email}")
 
-    def _send_email(self, to_email: str, subject: str, html_content: str, text_content: str = None):
-        """Internal method to send email via SMTP"""
-        print(f"Attempting to send email to: {to_email}")
-        print(f"Subject: {subject}")
-        print(f"SMTP Host: {self.smtp_host}")
-        print(f"SMTP Port: {self.smtp_port}")
-        print(f"Use TLS: {self.use_tls}, Use SSL: {self.use_ssl}")
+    async def send_email(
+            self,
+            to_email: str,
+            subject: str,
+            html_content: str,
+            text_content: Optional[str] = None,
+            metadata_email: Optional[dict] = None,
+            db: Optional[Session] = None
+    ) -> str:
+        """
+        Queue email for async sending
+
+        Returns:
+            str: Email queue ID
+        """
+        if db is None:
+            from ..core.database import SessionLocal
+            db = SessionLocal()
+            close_db = True
+        else:
+            close_db = False
 
         try:
-            # SMTP connection setup
-            print("Establishing SMTP connection...")
+            # Create email queue entry
+            email_entry = EmailQueue(
+                to_email=to_email,
+                subject=subject,
+                html_content=html_content,
+                text_content=text_content,
+                metadata=metadata_email or {}
+            )
+
+            db.add(email_entry)
+            db.commit()
+            db.refresh(email_entry)
+
+            logger.info(f"📧 Email queued: {email_entry.id} to {to_email}")
+
+            # Start async processing in background
+            asyncio.create_task(self._process_email(email_entry.id))
+
+            return email_entry.id
+
+        finally:
+            if close_db:
+                db.close()
+
+    async def _process_email(self, email_id: str):
+        """Process a single email from queue"""
+        from ..core.database import SessionLocal
+        db = SessionLocal()
+
+        try:
+            email_entry = db.query(EmailQueue).filter(
+                EmailQueue.id == email_id
+            ).first()
+
+            if not email_entry or email_entry.status not in [EmailStatus.PENDING, EmailStatus.RETRY]:
+                return
+
+            # Update status to sending
+            email_entry.status = EmailStatus.SENDING
+            email_entry.attempts += 1
+            db.commit()
+
+            # Send email
+            try:
+                await self._send_smtp_email(
+                    email_entry.to_email,
+                    email_entry.subject,
+                    email_entry.html_content,
+                    email_entry.text_content
+                )
+
+                # Mark as sent
+                email_entry.status = EmailStatus.SENT
+                email_entry.sent_at = datetime.utcnow()
+                db.commit()
+
+                logger.info(f"✅ Email sent successfully: {email_id}")
+
+            except Exception as e:
+                logger.error(f"❌ Email send failed: {email_id} - {str(e)}")
+
+                # Check if should retry
+                if email_entry.attempts < email_entry.max_attempts:
+                    # Schedule retry
+                    delay_seconds = self.retry_delays[email_entry.attempts - 1]
+                    email_entry.status = EmailStatus.RETRY
+                    email_entry.next_retry_at = datetime.utcnow() + timedelta(seconds=delay_seconds)
+                    email_entry.error_message = str(e)
+                    db.commit()
+
+                    logger.info(
+                        f"📧 Email retry scheduled: {email_id} "
+                        f"(attempt {email_entry.attempts}/{email_entry.max_attempts}) "
+                        f"in {delay_seconds}s"
+                    )
+
+                    # Schedule retry
+                    await asyncio.sleep(delay_seconds)
+                    await self._process_email(email_id)
+                else:
+                    # Max attempts reached
+                    email_entry.status = EmailStatus.FAILED
+                    email_entry.error_message = str(e)
+                    db.commit()
+
+                    logger.error(
+                        f"❌ Email failed permanently: {email_id} "
+                        f"after {email_entry.attempts} attempts"
+                    )
+
+        finally:
+            db.close()
+
+    async def _send_smtp_email(
+            self,
+            to_email: str,
+            subject: str,
+            html_content: str,
+            text_content: Optional[str] = None
+    ):
+        """Send email via SMTP (blocking operation in thread pool)"""
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(
+            None,
+            self._send_smtp_sync,
+            to_email,
+            subject,
+            html_content,
+            text_content
+        )
+
+    def _send_smtp_sync(
+            self,
+            to_email: str,
+            subject: str,
+            html_content: str,
+            text_content: Optional[str] = None
+    ):
+        """Synchronous SMTP send for async operations"""
+        try:
+            # Connect to SMTP server
             if self.use_ssl:
-                print("Using SSL for SMTP connection")
-                server = smtplib.SMTP_SSL(self.smtp_host, self.smtp_port)
-                print("SSL SMTP connection established successfully")
+                server = smtplib.SMTP_SSL(self.smtp_host, self.smtp_port, timeout=10)
             else:
-                print("Using plain SMTP connection")
-                server = smtplib.SMTP(self.smtp_host, self.smtp_port)
-                print("Plain SMTP connection established successfully")
+                server = smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=10)
 
-            # TLS handling
             if self.use_tls and not self.use_ssl:
-                print("Starting TLS encryption...")
                 server.starttls()
-                print("TLS started successfully")
 
-            # Authentication
+            # Login
             if self.smtp_username and self.smtp_password:
-                print("Attempting SMTP authentication...")
-                logger.debug(f"Username: {self.smtp_username}")
                 server.login(self.smtp_username, self.smtp_password)
-                print("SMTP authentication successful")
-            else:
-                logger.warning("No SMTP credentials provided - attempting unauthenticated send")
 
             # Create message
-            print("Creating email message...")
             msg = MIMEMultipart('alternative')
             msg['Subject'] = subject
             msg['From'] = self.from_email
             msg['To'] = to_email
 
-            # Attach both HTML and plain text parts
             if text_content:
-                logger.debug("Attaching plain text content")
                 part1 = MIMEText(text_content, 'plain')
                 msg.attach(part1)
 
-            logger.debug("Attaching HTML content")
             part2 = MIMEText(html_content, 'html')
             msg.attach(part2)
 
-            # Send email
-            print(f"Sending email to {to_email}...")
+            # Send
             server.send_message(msg)
-            print("Email sent successfully")
-
-            # Cleanup
-            print("Closing SMTP connection...")
             server.quit()
-            print("SMTP connection closed")
 
-            print(f"Email sent successfully to {to_email}")
-            return True
-
-        except smtplib.SMTPException as e:
-            logger.error(f"SMTP error occurred while sending email to {to_email}")
-            logger.error(f"SMTP error code: {e.smtp_code if hasattr(e, 'smtp_code') else 'N/A'}")
-            logger.error(f"SMTP error message: {e.smtp_error if hasattr(e, 'smtp_error') else str(e)}")
-            logger.error(f"Full traceback: {traceback.format_exc()}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"SMTP error while sending email: {str(e)}"
-            )
         except Exception as e:
-            logger.error(f"Unexpected error occurred while sending email to {to_email}")
-            logger.error(f"Error type: {type(e).__name__}")
-            logger.error(f"Error message: {str(e)}")
-            logger.error(f"Full traceback: {traceback.format_exc()}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to send email: {str(e)}"
-            )
+            logger.error(f"SMTP error: {e}")
+            raise
 
-    def send_invitation_email(self, to_email: str, invite_link: str, org_name: str, invited_by: str):
-        """Send organization invitation email"""
-        print(f"Sending invitation email to {to_email} for organization {org_name}")
+    # 🎯 ENTERPRISE: Async template methods
+    async def send_invitation_email(
+            self,
+            to_email: str,
+            invite_link: str,
+            org_name: str,
+            invited_by: str,
+            db: Optional[Session] = None
+    ) -> str:
+        """Send organization invitation email (Enterprise async)"""
+        print(f"📧 Queuing invitation email to {to_email} for organization {org_name}")
         subject = f"Invitation to join {org_name} on SaaSReady"
 
         html_content = f"""
         <html>
-            <body>
-                <h2>You've been invited to join {org_name}</h2>
-                <p>You've been invited by {invited_by} to join the organization <strong>{org_name}</strong> on SaaSReady.</p>
-                <p>Click the link below to accept your invitation and get started:</p>
-                <p><a href="{invite_link}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Accept Invitation</a></p>
-                <p>Or copy and paste this URL in your browser:<br>{invite_link}</p>
-                <p>This invitation link will expire in 7 days.</p>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <h2 style="color: #333;">You've been invited to join {org_name}</h2>
+                <p>You've been invited by <strong>{invited_by}</strong> to join <strong>{org_name}</strong> on SaaSReady.</p>
+                <p>
+                    <a href="{invite_link}" 
+                       style="background-color: #4F46E5; color: white; padding: 12px 24px; 
+                              text-decoration: none; border-radius: 4px; display: inline-block;">
+                        Accept Invitation
+                    </a>
+                </p>
+                <p style="color: #666;">This invitation expires in 7 days.</p>
                 <hr>
                 <p><small>If you didn't expect this invitation, you can safely ignore this email.</small></p>
             </body>
@@ -135,31 +282,47 @@ class EmailService:
         text_content = f"""
         You've been invited to join {org_name}
         
-        You've been invited by {invited_by} to join the organization {org_name} on SaaSReady.
+        Invited by: {invited_by}
         
-        Accept your invitation here: {invite_link}
+        Accept invitation: {invite_link}
         
-        This invitation link will expire in 7 days.
+        This invitation expires in 7 days.
         
         If you didn't expect this invitation, you can safely ignore this email.
         """
 
-        return self._send_email(to_email, subject, html_content, text_content)
+        return await self.send_email(
+            to_email=to_email,
+            subject=subject,
+            html_content=html_content,
+            text_content=text_content,
+            metadata_email={"template": "invitation", "org_name": org_name},
+            db=db
+        )
 
-    def send_password_reset_email(self, to_email: str, reset_link: str):
-        """Send password reset email"""
-        print(f"Sending password reset email to {to_email}")
+    async def send_password_reset_email(
+            self,
+            to_email: str,
+            reset_link: str,
+            db: Optional[Session] = None
+    ) -> str:
+        """Send password reset email (Enterprise async)"""
+        print(f"📧 Queuing password reset email to {to_email}")
         subject = "Reset your SaaSReady password"
 
         html_content = f"""
         <html>
-            <body>
-                <h2>Reset your password</h2>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <h2 style="color: #333;">Reset your password</h2>
                 <p>We received a request to reset your password for your SaaSReady account.</p>
-                <p>Click the link below to reset your password:</p>
-                <p><a href="{reset_link}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Reset Password</a></p>
-                <p>Or copy and paste this URL in your browser:<br>{reset_link}</p>
-                <p>This password reset link will expire in 1 hour.</p>
+                <p>
+                    <a href="{reset_link}" 
+                       style="background-color: #4F46E5; color: white; padding: 12px 24px; 
+                              text-decoration: none; border-radius: 4px; display: inline-block;">
+                        Reset Password
+                    </a>
+                </p>
+                <p style="color: #666;">This password reset link will expire in 1 hour.</p>
                 <hr>
                 <p><small>If you didn't request a password reset, you can safely ignore this email.</small></p>
             </body>
@@ -178,22 +341,37 @@ class EmailService:
         If you didn't request a password reset, you can safely ignore this email.
         """
 
-        return self._send_email(to_email, subject, html_content, text_content)
+        return await self.send_email(
+            to_email=to_email,
+            subject=subject,
+            html_content=html_content,
+            text_content=text_content,
+            metadata_email={"template": "password_reset"}
+        )
 
-    def send_verification_email(self, to_email: str, verify_link: str):
-        """Send email verification email"""
-        print(f"Sending verification email to {to_email}")
+    async def send_verification_email(
+            self,
+            to_email: str,
+            verify_link: str,
+            db: Optional[Session] = None
+    ) -> str:
+        """Send email verification email (Enterprise async)"""
+        print(f"📧 Queuing verification email to {to_email}")
         subject = "Verify your email address for SaaSReady"
 
         html_content = f"""
         <html>
-            <body>
-                <h2>Verify your email address</h2>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <h2 style="color: #333;">Verify your email address</h2>
                 <p>Thank you for signing up for SaaSReady! Please verify your email address to complete your account setup.</p>
-                <p>Click the link below to verify your email:</p>
-                <p><a href="{verify_link}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Verify Email</a></p>
-                <p>Or copy and paste this URL in your browser:<br>{verify_link}</p>
-                <p>This verification link will expire in 24 hours.</p>
+                <p>
+                    <a href="{verify_link}" 
+                       style="background-color: #4F46E5; color: white; padding: 12px 24px; 
+                              text-decoration: none; border-radius: 4px; display: inline-block;">
+                        Verify Email
+                    </a>
+                </p>
+                <p style="color: #666;">This verification link will expire in 24 hours.</p>
                 <hr>
                 <p><small>If you didn't create a SaaSReady account, you can safely ignore this email.</small></p>
             </body>
@@ -212,8 +390,40 @@ class EmailService:
         If you didn't create a SaaSReady account, you can safely ignore this email.
         """
 
-        return self._send_email(to_email, subject, html_content, text_content)
+        return await self.send_email(
+            to_email=to_email,
+            subject=subject,
+            html_content=html_content,
+            text_content=text_content,
+            metadata_email={"template": "verification"},
+            db=db
+        )
+
+    # 🎯 ENTERPRISE: Background task methods
+    async def process_retry_queue(self, db: Session):
+        """Process emails scheduled for retry"""
+        emails = db.query(EmailQueue).filter(
+            EmailQueue.status == EmailStatus.RETRY,
+            EmailQueue.next_retry_at <= datetime.utcnow()
+        ).limit(100).all()
+
+        for email in emails:
+            await self._process_email(email.id)
+
+    def cleanup_old_emails(self, db: Session, days: int = 30):
+        """Cleanup old sent/failed emails"""
+        cutoff = datetime.utcnow() - timedelta(days=days)
+
+        deleted = db.query(EmailQueue).filter(
+            EmailQueue.status.in_([EmailStatus.SENT, EmailStatus.FAILED]),
+            EmailQueue.created_at < cutoff
+        ).delete()
+
+        db.commit()
+        logger.info(f"Cleaned up {deleted} old emails")
+
+        return deleted
 
 
-# Global instance
+# Global instance (enterprise-grade async)
 email_service = EmailService()

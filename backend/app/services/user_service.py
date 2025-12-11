@@ -9,7 +9,8 @@ from ..core.security import get_password_hash
 from ..services.email_service import email_service
 from ..core.config import settings
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,timezone
+import asyncio
 
 
 class UserService:
@@ -70,16 +71,18 @@ class UserService:
             if existing_membership.status == MembershipStatus.invited:
                 # Update token and expiry
                 existing_membership.invitation_token = secrets.token_urlsafe(32)
-                existing_membership.invitation_expires_at = datetime.utcnow() + timedelta(days=7)
+                existing_membership.invitation_expires_at = datetime.now(timezone.utc) + timedelta(days=7)
                 self.db.commit()
 
-                # Send invitation email
+                # 🎯 ENTERPRISE: Async email sending
                 invite_link = f"{settings.FRONTEND_BASE_URL}/accept-invite?token={existing_membership.invitation_token}"
-                email_service.send_invitation_email(
-                    to_email=data.email,
-                    invite_link=invite_link,
-                    org_name=org.name,
-                    invited_by=inviter.full_name or inviter.email
+                asyncio.create_task(
+                    email_service.send_invitation_email(
+                        to_email=data.email,
+                        invite_link=invite_link,
+                        org_name=org.name,
+                        invited_by=inviter.full_name or inviter.email
+                    )
                 )
 
                 return existing_membership
@@ -91,7 +94,7 @@ class UserService:
 
         # Generate invitation token
         invitation_token = secrets.token_urlsafe(32)
-        invitation_expires_at = datetime.utcnow() + timedelta(days=7)
+        invitation_expires_at = datetime.now(timezone.utc) + timedelta(days=7)
 
         # Create membership with invited status
         membership = Membership(
@@ -107,13 +110,15 @@ class UserService:
         self.db.commit()
         self.db.refresh(membership)
 
-        # Send invitation email
+        # 🎯 ENTERPRISE: Async email sending
         invite_link = f"{settings.FRONTEND_BASE_URL}/accept-invite?token={invitation_token}"
-        email_service.send_invitation_email(
-            to_email=data.email,
-            invite_link=invite_link,
-            org_name=org.name,
-            invited_by=inviter.full_name or inviter.email
+        asyncio.create_task(
+            email_service.send_invitation_email(
+                to_email=data.email,
+                invite_link=invite_link,
+                org_name=org.name,
+                invited_by=inviter.full_name or inviter.email
+            )
         )
 
         return membership

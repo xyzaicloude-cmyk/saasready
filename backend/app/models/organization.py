@@ -19,7 +19,7 @@ class Organization(Base):
     memberships = relationship("Membership", back_populates="organization", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="organization")
     settings = relationship("OrgSettings", back_populates="organization", uselist=False, cascade="all, delete-orphan")
-    #api_keys = relationship("APIKey", back_populates="organization", cascade="all, delete-orphan")
+    api_keys = relationship("APIKey", back_populates="organization", cascade="all, delete-orphan")
     sso_connections = relationship("SSOConnection", back_populates="organization", cascade="all, delete-orphan")
     feature_flag_overrides = relationship(
         "OrgFeatureFlag",

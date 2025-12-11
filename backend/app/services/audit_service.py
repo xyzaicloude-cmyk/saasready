@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from ..models.audit_log import AuditLog
 from ..models.organization import Organization
 import uuid
-from datetime import datetime
+from datetime import datetime,timezone
 from fastapi import Request
 
 class AuditService:
@@ -47,7 +47,7 @@ class AuditService:
             audit_metadata=metadata,
             ip_address=request.client.host if request.client else None,
             user_agent=request.headers.get("user-agent"),
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
 
         self.db.add(audit_log)

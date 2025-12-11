@@ -1,0 +1,27 @@
+# Development-only dependencies
+
+# Testing
+pytest-watch==4.2.0
+pytest-xdist==3.5.0  # Parallel test execution
+pytest-benchmark==4.0.0
+
+# Code Coverage
+coverage==7.4.0
+
+# Debugging
+pytest-pdb==0.3.1
+pudb==2024.1
+
+# Documentation
+sphinx==7.2.6
+sphinx-rtd-theme==2.0.0
+
+# Pre-commit Hooks
+pre-commit==3.6.0
+
+# Load Testing
+locust==2.20.0
+faker==22.0.0
+
+# Database GUI (optional)
+pgcli==4.0.1

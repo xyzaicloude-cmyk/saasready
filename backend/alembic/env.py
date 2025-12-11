@@ -1,3 +1,8 @@
+# backend/alembic/env.py
+"""
+Alembic migration environment
+CRITICAL: Import ALL models including token_blacklist
+"""
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -9,18 +14,21 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.core.database import Base
 
+# CRITICAL: Import all models including new token revocation models
 from app.models.user import User
 from app.models.organization import Organization
 from app.models.membership import Membership
 from app.models.role import Role
-from app.models.permission import Permission,RolePermission
+from app.models.permission import Permission, RolePermission
 from app.models.audit_log import AuditLog
 from app.models.org_settings import OrgSettings
 from app.models.api_key import APIKey
 from app.models.sso_connection import SSOConnection
 from app.models.feature_flag import FeatureFlag, OrgFeatureFlag
+# CRITICAL: Import token revocation models for migration
+from app.models.token_blacklist import TokenBlacklist, UserSession
 
-print("✅ All models imported successfully")
+print("✅ All models imported successfully (including TokenBlacklist & UserSession)")
 
 config = context.config
 
@@ -34,6 +42,7 @@ config.set_main_option("sqlalchemy.url", database_url)
 
 
 def run_migrations_offline() -> None:
+    """Run migrations in 'offline' mode."""
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -47,6 +56,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    """Run migrations in 'online' mode."""
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
