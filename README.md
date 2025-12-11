@@ -769,28 +769,21 @@ docker-compose -f docker-compose.prod.yml up -d
 - [x] Feature flags
 - [x] Admin UI
 
-### **Phase 2: Email & Invitations**
-- [ ] Email service integration (SendGrid/AWS SES)
-- [ ] Secure invitation tokens
-- [ ] Email templates (invite, password reset)
-- [ ] Password reset flow
-- [ ] Email verification enforcement
-
-### **Phase 3: SSO & Advanced Auth**
+### **Phase 2: SSO & Advanced Auth**
 - [ ] SAML 2.0 authentication
 - [ ] OIDC/OAuth2 providers
 - [ ] Google Workspace integration
 - [ ] Azure AD integration
 - [ ] 2FA/MFA support
 
-### **Phase 4: Enterprise Features**
+### **Phase 3: Enterprise Features**
 - [ ] API key authentication
 - [ ] Webhooks system
 - [ ] Custom role creation UI
 - [ ] Directory sync (SCIM)
 - [ ] Session management
 
-### **Phase 5: Scale & Performance**
+### **Phase 4: Scale & Performance**
 - [ ] Redis rate limiting
 - [ ] Horizontal scaling guide
 - [ ] Multi-region deployment
