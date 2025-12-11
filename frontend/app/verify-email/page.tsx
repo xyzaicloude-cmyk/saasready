@@ -28,6 +28,10 @@ function VerifyEmailContent() {
         return;
       }
 
+      if (status !== 'loading') {
+        return; // Don't run if already processing/success/error
+      }
+
       try {
         await api.post('/auth/verify-email', { token });
         setStatus('success');

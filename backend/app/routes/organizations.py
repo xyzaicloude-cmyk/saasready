@@ -152,7 +152,14 @@ def invite_user_to_organization(
 ):
     """Enterprise: Invite user to organization with enhanced validation"""
     org_service = OrgService(db)
-    new_membership = org_service.invite_user(org_id, data, inviter=current_user)
+    org_service.set_background_tasks(background_tasks)
+
+    new_membership = org_service.invite_user(
+        org_id,
+        data,
+        inviter=current_user,
+        background_tasks=background_tasks
+    )
 
     audit_service = AuditService(db)
     audit_service.log_event(

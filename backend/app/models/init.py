@@ -8,9 +8,8 @@ from .audit_log import AuditLog
 from .org_settings import OrgSettings
 from .sso_connection import SSOConnection
 from .feature_flag import FeatureFlag, OrgFeatureFlag  # NEW
-
-# Remove APIKey reference since we don't have that model yet
-
+from .token_blacklist import TokenBlacklist, UserSession
+from .api_key import APIKey
 __all__ = [
     "User",
     "Organization",
@@ -22,5 +21,8 @@ __all__ = [
     "OrgSettings",
     "SSOConnection",
     "FeatureFlag",  # NEW
-    "OrgFeatureFlag"
+    "OrgFeatureFlag",
+    "TokenBlacklist",
+    "UserSession",
+    "APIKey",
 ]

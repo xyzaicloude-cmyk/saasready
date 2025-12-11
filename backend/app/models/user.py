@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime
+from sqlalchemy import Column, String, Boolean, DateTime,JSON, Integer
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -24,3 +24,20 @@ class User(Base):
 
     memberships = relationship("Membership", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="actor", foreign_keys="AuditLog.actor_user_id")
+
+
+    # 🆕 ENTERPRISE: 2FA fields
+    totp_secret = Column(String, nullable=True)  # Active TOTP secret
+    totp_secret_pending = Column(String, nullable=True)  # Pending verification
+    totp_enabled = Column(Boolean, default=False)
+    totp_enabled_at = Column(DateTime, nullable=True)
+    backup_codes = Column(JSON, nullable=True)  # Array of backup codes
+
+    # 🆕 ENTERPRISE: Security tracking
+    password_changed_at = Column(DateTime, nullable=True)
+    last_login_at = Column(DateTime, nullable=True)
+    last_login_ip = Column(String, nullable=True)
+    last_device_fingerprint = Column(String, nullable=True)
+    failed_login_attempts = Column(Integer, default=0)
+    locked_until = Column(DateTime, nullable=True)
+
