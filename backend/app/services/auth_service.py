@@ -3,10 +3,16 @@
 🔧 FIXED VERSION - Enterprise Auth Service
 All token handling issues resolved, invitation flow fixed
 """
-from sqlalchemy.orm import Session
-from datetime import timedelta
+import re
+import secrets
+import traceback
+import threading
+from datetime import datetime, timezone, timedelta
+
 from fastapi import HTTPException, status, Request, BackgroundTasks
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+
 from ..models.user import User
 from ..models.organization import Organization
 from ..models.membership import Membership, MembershipStatus
@@ -23,11 +29,6 @@ from ..core.config import settings
 from ..schemas.auth import RegisterRequest, LoginRequest
 from ..services.audit_service import AuditService
 from ..services.email_service import email_service
-import re
-import traceback
-import secrets
-from datetime import datetime, timezone
-import threading
 
 
 class AuthService:
@@ -64,55 +65,46 @@ class AuthService:
             background_tasks: BackgroundTasks = None
     ) -> tuple[User, str]:
         """
-        🔧 FIXED: Register user with proper transaction management
-        Returns: (user, access_token_string)
+        🔧 FIXED: Register user with proper invitation handling
+        CRITICAL: Check invitation BEFORE creating personal org
         """
-        print(f"📧 [DEBUG] Starting registration process for: {data.email}")
-        print(f"📧 [DEBUG] Invitation token: {invitation_token}")
-
-        transaction_active = self.db.in_transaction()
-        print(f"📧 [DEBUG] Transaction already active: {transaction_active}")
+        print(f"📧 Starting registration: {data.email}, has_invite: {invitation_token is not None}")
 
         # Set background tasks if provided
         if background_tasks:
             self.background_tasks = background_tasks
 
-        # 🆕 INPUT SANITIZATION: Normalize email and trim name
+        # 🆕 INPUT SANITIZATION
         data.email = data.email.strip().lower()
         data.full_name = data.full_name.strip()[:255]
 
+        # Password validation
         if not validate_password_length(data.password):
-            print(f"❌ Password too long for user: {data.email}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Password cannot exceed 72 characters. Please use a shorter password."
+                detail="Password cannot exceed 72 characters"
             )
 
+        # Check if user already exists
         existing_user = self.db.query(User).filter(User.email == data.email).first()
         if existing_user:
-            print(f"❌ User already exists: {data.email}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered"
             )
 
-        # Start a fresh transaction
         try:
-            print("📧 [DEBUG] Starting database transaction...")
-
-            # Check if this is the first user in the system (admin)
+            # Check if first user (becomes admin)
             user_count = self.db.query(User).count()
             is_first_user = user_count == 0
-            print(f"📧 [DEBUG] Is first user: {is_first_user}")
 
-            # CRITICAL FIX: Check for invitation BEFORE creating user
+            # 🎯 CRITICAL FIX: Check invitation BEFORE creating user
             is_invitation_registration = invitation_token is not None
-            print(f"📧 [DEBUG] Is invitation registration: {is_invitation_registration}")
-
-            # If there's an invitation token, validate it first
             invitation_membership = None
+
             if is_invitation_registration:
-                print(f"📧 [DEBUG] Validating invitation token before creating user...")
+                print(f"🎯 ENTERPRISE: Validating invitation before user creation")
+
                 invitation_membership = self.db.query(Membership).filter(
                     Membership.invitation_token == invitation_token,
                     Membership.invitation_expires_at > datetime.now(timezone.utc),
@@ -120,38 +112,29 @@ class AuthService:
                 ).first()
 
                 if not invitation_membership:
-                    print("❌ Invalid or expired invitation token")
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail="Invalid or expired invitation token"
                     )
 
-                # ENTERPRISE: Strict email matching for invited users
-                if (
-                        invitation_membership.invited_email
-                        and data.email.lower() != invitation_membership.invited_email.lower()
-                ):
-                    print(
-                        f"❌ Email mismatch. Expected: {invitation_membership.invited_email}, "
-                        f"Got: {data.email}"
-                    )
+                # Email matching validation
+                if (invitation_membership.invited_email and
+                        data.email.lower() != invitation_membership.invited_email.lower()):
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=(
-                            "Please register with the invited email address: "
-                            f"{invitation_membership.invited_email}"
-                        )
+                        detail=f"Please register with the invited email: {invitation_membership.invited_email}"
                     )
 
-                print(f"✅ Valid invitation found for org: {invitation_membership.organization_id}")
+                print(f"✅ Valid invitation for org: {invitation_membership.organization_id}")
 
+            # Generate verification token
             verification_token = secrets.token_urlsafe(32)
             verification_sent_at = datetime.now(timezone.utc)
-            # Auto-verify if it's first user OR invitation-based registration
-            is_email_verified = is_first_user or is_invitation_registration
-            print(f"📧 [DEBUG] Email verified: {is_email_verified}")
 
-            print("📧 [DEBUG] Creating user object...")
+            # Auto-verify if first user OR invited user
+            is_email_verified = is_first_user or is_invitation_registration
+
+            # Create user
             user = User(
                 email=data.email,
                 hashed_password=get_password_hash(data.password),
@@ -163,37 +146,30 @@ class AuthService:
                 email_verification_sent_at=verification_sent_at if not is_email_verified else None,
             )
             self.db.add(user)
-            self.db.flush()  # Use flush instead of commit to keep transaction open
-            print(f"✅ User created with ID: {user.id}")
+            self.db.flush()
+            print(f"✅ User created: {user.id}")
 
-            # CRITICAL FIX: Handle invitation-based registration FIRST - NO PERSONAL ORG
+            # 🎯 CRITICAL FIX: Handle invitation FIRST - NO PERSONAL ORG
             if is_invitation_registration and invitation_membership:
-                print("🎯 [DEBUG] ENTERPRISE FLOW: Processing invitation during registration")
+                print("🎯 ENTERPRISE: Activating invitation - NO personal org created")
 
-                # Activate the membership
+                # Activate membership
                 invitation_membership.user_id = user.id
                 invitation_membership.status = MembershipStatus.active
                 invitation_membership.invitation_token = None
                 invitation_membership.invitation_expires_at = None
 
-                print(
-                    "✅ Membership activated for user in org: "
-                    f"{invitation_membership.organization_id}"
-                )
-
-                # CRITICAL: Commit and return immediately - NO personal org creation
-                print("📧 [DEBUG] Committing invitation transaction...")
                 self.db.commit()
                 self.db.refresh(user)
 
-                # 🔧 FIXED: Generate token properly
+                # Generate token
                 access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
                 access_token = create_access_token(
                     data={"sub": str(user.id)},
                     expires_delta=access_token_expires
                 )
-                print(f"✅ Access token generated for user: {user.id}")
 
+                # Audit log
                 if request:
                     audit_service = AuditService(self.db)
                     audit_service.log_event(
@@ -205,20 +181,17 @@ class AuthService:
                         metadata={
                             "email": user.email,
                             "organization_id": invitation_membership.organization_id,
-                            "invitation_token": invitation_token,
-                            "role_id": str(invitation_membership.role_id),
+                            "auto_verified": True
                         },
-                        request=request,
+                        request=request
                     )
 
-                print(
-                    f"🎉 ENTERPRISE: User registered via invitation: {user.email} "
-                    "- NO personal org created"
-                )
-                return user, access_token  # 🔧 FIXED: Return (user, token_string)
+                print(f"🎉 INVITED USER: {user.email} joined org {invitation_membership.organization_id} - NO personal org")
+                return user, access_token
 
-            # NORMAL REGISTRATION FLOW - Only for non-invited users
-            print("📧 [DEBUG] Standard registration flow - creating personal organization")
+            # 🎯 NORMAL REGISTRATION: Create personal org (ONLY for non-invited users)
+            print("📧 Standard registration - creating personal organization")
+
             base_name = data.full_name or data.email.split("@")[0]
             base_slug = re.sub(r"[^a-z0-9]+", "-", base_name.lower()).strip("-")
             slug = base_slug
@@ -228,7 +201,6 @@ class AuthService:
                 slug = f"{base_slug}-{counter}"
                 counter += 1
 
-            print(f"📧 Creating organization with slug: {slug}")
             org = Organization(
                 name=f"{base_name}'s Organization",
                 slug=slug,
@@ -236,20 +208,14 @@ class AuthService:
             )
             self.db.add(org)
             self.db.flush()
-            print(f"✅ Organization created with ID: {org.id}")
 
-            print("📧 Looking for owner role...")
+            # Assign owner role
             owner_role = self.db.query(Role).filter(Role.name == "owner").first()
             if not owner_role:
-                print("❌ Owner role not found, creating...")
                 owner_role = Role(name="owner", description="Organization owner")
                 self.db.add(owner_role)
                 self.db.flush()
-                print(f"✅ Created owner role with ID: {owner_role.id}")
-            else:
-                print(f"✅ Found owner role with ID: {owner_role.id}")
 
-            print("📧 Creating membership...")
             membership = Membership(
                 user_id=user.id,
                 organization_id=org.id,
@@ -257,36 +223,27 @@ class AuthService:
                 status=MembershipStatus.active,
             )
             self.db.add(membership)
-
-            print("📧 Committing main transaction...")
             self.db.commit()
             self.db.refresh(user)
-            print("✅ Transaction committed successfully")
 
-            # 🎯 ENTERPRISE: Background email sending with queue
-            # Only send verification email if it's NOT the first user
+            # Send verification email (if not first user)
             if not is_first_user:
-                verify_link = (
-                    f"{settings.FRONTEND_BASE_URL}/verify-email?token={verification_token}"
-                )
+                verify_link = f"{settings.FRONTEND_BASE_URL}/verify-email?token={verification_token}"
 
-                # Use background tasks or fallback thread
                 if self.background_tasks:
                     self.background_tasks.add_task(
                         self._send_verification_email_async,
                         user.email,
-                        verify_link,
+                        verify_link
                     )
                 else:
                     self._run_in_background_thread(
                         self._send_verification_email_async,
                         user.email,
-                        verify_link,
+                        verify_link
                     )
-                print(f"✅ Verification email queued for: {user.email}")
-            elif is_first_user:
-                print(f"🎉 First user ({user.email}) auto-verified as admin")
 
+            # Audit log
             if request:
                 audit_service = AuditService(self.db)
                 audit_service.log_event(
@@ -297,80 +254,37 @@ class AuthService:
                     target_id=user.id,
                     metadata={
                         "email": user.email,
-                        "full_name": user.full_name,
                         "is_first_user": is_first_user,
-                        "auto_verified": is_first_user,
+                        "auto_verified": is_first_user
                     },
-                    request=request,
+                    request=request
                 )
 
-                if not is_first_user:
-                    audit_service.log_event(
-                        actor_user_id=user.id,
-                        organization_id=org.id,
-                        action="user.email.verification.sent",
-                        target_type="user",
-                        target_id=user.id,
-                        metadata={"email": user.email},
-                        request=request,
-                    )
+            # Generate token
+            access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+            access_token = create_access_token(
+                data={"sub": str(user.id)},
+                expires_delta=access_token_expires
+            )
 
-        except IntegrityError as e:
-            print(f"❌ [DEBUG] Database integrity error: {str(e)}")
-            if self.db.is_active:
-                try:
-                    self.db.rollback()
-                    print("✅ Transaction rolled back due to integrity error")
-                except Exception as rollback_error:
-                    print(f"⚠️ Rollback failed: {rollback_error}")
+            return user, access_token
+
+        except IntegrityError:
+            self.db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Registration failed due to database constraints",
+                detail="Registration failed due to database constraints"
             )
-        except SQLAlchemyError as e:
-            print(f"❌ [DEBUG] Database error: {str(e)}")
-            if self.db.is_active:
-                try:
-                    self.db.rollback()
-                    print("✅ Transaction rolled back due to SQLAlchemy error")
-                except Exception as rollback_error:
-                    print(f"⚠️ Rollback failed: {rollback_error}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database error during registration",
-            )
-        except HTTPException as e:
-            print(f"❌ [DEBUG] HTTP Exception: {e.detail}")
-            if self.db.is_active:
-                try:
-                    self.db.rollback()
-                    print("✅ Transaction rolled back due to HTTP exception")
-                except Exception as rollback_error:
-                    print(f"⚠️ Rollback failed: {rollback_error}")
-            raise e
+        except HTTPException:
+            self.db.rollback()
+            raise
         except Exception as e:
-            print(f"❌ [DEBUG] Unexpected error: {str(e)}")
-            print(f"Traceback: {traceback.format_exc()}")
-            if self.db.is_active:
-                try:
-                    self.db.rollback()
-                    print("✅ Transaction rolled back due to unexpected error")
-                except Exception as rollback_error:
-                    print(f"⚠️ Rollback failed: {rollback_error}")
+            self.db.rollback()
+            print(f"Registration error: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Registration failed: {str(e)}",
+                detail=f"Registration failed: {str(e)}"
             )
-
-        # 🔧 FIXED: Generate token properly for normal registration
-        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            data={"sub": str(user.id)},
-            expires_delta=access_token_expires,
-        )
-        print(f"✅ Access token created for user: {user.id}")
-
-        return user, access_token
 
     async def _send_verification_email_async(self, email: str, verify_link: str):
         """Async wrapper for sending verification email"""
