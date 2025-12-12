@@ -29,6 +29,8 @@ def upgrade() -> None:
     op.add_column('login_attempts', sa.Column('device_id', sa.String(), nullable=True))
     op.add_column('login_attempts', sa.Column('device_type', sa.String(), nullable=True))
     op.add_column('login_attempts', sa.Column('two_factor_success', sa.Boolean(), nullable=True))
+    op.add_column('login_attempts', sa.Column('location_data', sa.JSON(), nullable=True)),
+    op.add_column('login_attempts', sa.Column('two_factor_attempted', sa.Boolean, nullable=True)),
 
     op.create_index('ix_login_attempts_device_id', 'login_attempts', ['device_id'])
 
@@ -39,6 +41,9 @@ def downgrade() -> None:
     op.drop_column('login_attempts', 'two_factor_success')
     op.drop_column('login_attempts', 'device_type')
     op.drop_column('login_attempts', 'device_id')
+    op.drop_column('login_attempts', 'location_data')
+    op.drop_column('login_attempts', 'two_factor_attempted')
+
 
     # Remove account_lockouts enhancements
     op.drop_index('ix_account_lockouts_ip_address', table_name='account_lockouts')

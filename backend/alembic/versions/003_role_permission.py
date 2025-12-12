@@ -19,7 +19,7 @@ depends_on = None
 
 def upgrade() -> None:
     # Add key column
-    op.add_column('permissions', sa.Column('key', sa.String(), nullable=True))
+    #op.add_column('permissions', sa.Column('key', sa.String(), nullable=True))
 
     # Populate key from existing name (or leave null for manual population)
     # If you have existing permissions, you may want to generate keys from name
@@ -31,8 +31,8 @@ def upgrade() -> None:
 
     # Make key NOT NULL and unique after populating
     op.alter_column('permissions', 'key', nullable=False)
-    op.create_unique_constraint('uq_permissions_key', 'permissions', ['key'])
+   # op.create_unique_constraint('uq_permissions_key', 'permissions', ['key'])
 
 def downgrade():
-    op.drop_constraint('uq_permissions_key', 'permissions', type_='unique')
+    #op.drop_constraint('uq_permissions_key', 'permissions', type_='unique')
     op.drop_column('permissions', 'key')
