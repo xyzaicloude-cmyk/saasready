@@ -218,6 +218,13 @@ def revoke_token(
     """Add token to blacklist"""
     from ..models.token_blacklist import TokenBlacklist
 
+    existing = db.query(TokenBlacklist).filter(
+        TokenBlacklist.jti == jti
+    ).first()
+
+    if existing:
+        return
+
     blacklist_entry = TokenBlacklist(
         jti=jti,
         user_id=user_id,
@@ -235,23 +242,35 @@ def revoke_all_user_tokens(user_id: str, reason: str, db: Session) -> int:
     Returns:
         int: Number of sessions revoked
     """
-    from ..models.token_blacklist import UserSession
+    from ..models.token_blacklist import UserSession,TokenBlacklist
 
     # Count active sessions before revoking
     active_sessions = db.query(UserSession).filter(
         UserSession.user_id == user_id,
-        UserSession.is_active == True
-    ).count()
+        UserSession.is_active == True,
+        UserSession.expires_at > datetime.now(timezone.utc)
+    ).all()
 
-    # Revoke all active sessions
-    db.query(UserSession).filter(
-        UserSession.user_id == user_id,
-        UserSession.is_active == True
-    ).update({"is_active": False})
+    revoked_count = len(active_sessions)
+
+    # 🔧 CRITICAL FIX: Blacklist each token's JTI
+    for session in active_sessions:
+        # Add JTI to blacklist table (immediate token invalidation)
+        blacklist_entry = TokenBlacklist(
+            jti=session.jti,
+            user_id=user_id,
+            expires_at=session.expires_at,
+            reason=reason
+        )
+        db.add(blacklist_entry)
+
+        # Mark session as inactive (audit trail)
+        session.is_active = False
 
     db.commit()
 
-    return active_sessions  # 🔧 FIXED: Return count of revoked sessions
+    return revoked_count
+
 
 
 def cleanup_expired_tokens(db: Session) -> int:
