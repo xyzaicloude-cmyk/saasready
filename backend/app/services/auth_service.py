@@ -493,8 +493,10 @@ class AuthService:
         Returns: (user, access_token_string)
         """
         print(f"📧 Login attempt for: {data.email}")
-
-        user = self.db.query(User).filter(User.email == data.email).first()
+# In login_user method
+        email_normalized = data.email.strip().lower()
+        user = self.db.query(User).filter(User.email == email_normalized).first()
+        #user = self.db.query(User).filter(User.email == data.email).first()
 
         if not user:
             print(f"❌ User not found: {data.email}")
