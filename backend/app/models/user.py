@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Boolean, DateTime,JSON, Integer
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime,timezone
 import uuid
 from ..core.database import Base
 
@@ -19,8 +19,8 @@ class User(Base):
     email_verification_sent_at = Column(DateTime, nullable=True)
     reset_token = Column(String, unique=True, nullable=True)
     reset_token_expires_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     memberships = relationship("Membership", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="actor", foreign_keys="AuditLog.actor_user_id")

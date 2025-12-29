@@ -1,5 +1,5 @@
 # Development-only dependencies
-
+fastapi==0.109.0
 # Testing
 pytest-watch==4.2.0
 pytest-xdist==3.5.0  # Parallel test execution
@@ -23,5 +23,29 @@ pre-commit==3.6.0
 locust==2.20.0
 faker==22.0.0
 
+pyotp==2.9.0
+qrcode==7.4.2
 # Database GUI (optional)
 pgcli==4.0.1
+sqlalchemy==2.0.25
+alembic==1.13.1
+email-validator==2.1.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+argon2-cffi==23.1.0
+cryptography==41.0.7
+requests==2.31.0
+httpx==0.26.0
+
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Caching & Session Management
+redis==5.0.1
+hiredis==2.3.2  # Faster Redis protocol parser
+
+
+slowapi==0.1.9
+ua-parser==0.18.0
+pyjwt==2.10.1
