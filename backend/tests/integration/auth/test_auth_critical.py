@@ -1,4 +1,3 @@
-# backend/tests/test_auth_critical.py
 import pytest
 from datetime import datetime, timedelta, timezone
 
@@ -167,7 +166,6 @@ def test_get_current_user(client, test_user, seed_roles):
         "/api/v1/auth/me",
         headers={"Authorization": f"Bearer {token}"}
     )
-    print("hahahahahah",{response})
     assert response.status_code == 200
     assert response.json()["email"] == test_user.email
 

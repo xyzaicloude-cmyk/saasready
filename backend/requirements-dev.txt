@@ -40,7 +40,6 @@ httpx==0.26.0
 
 pydantic==2.5.3
 pydantic-settings==2.1.0
-email-validator==2.1.0
 
 # Caching & Session Management
 redis==5.0.1
@@ -49,4 +48,4 @@ hiredis==2.3.2  # Faster Redis protocol parser
 
 slowapi==0.1.9
 ua-parser==0.18.0
-pyjwt=2.10.1
+pyjwt==2.10.1

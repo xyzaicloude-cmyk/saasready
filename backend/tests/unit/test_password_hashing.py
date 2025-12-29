@@ -8,7 +8,7 @@ def test_password_hash_uses_argon2():
 
     hashed = get_password_hash("TestPassword123!")
 
-    assert hashed.startswith("$argon2") or hashed.startswith("$2b$")
+    assert hashed.startswith("$argon2")
     assert len(hashed) > 50
 
 def test_same_password_generates_different_hashes():

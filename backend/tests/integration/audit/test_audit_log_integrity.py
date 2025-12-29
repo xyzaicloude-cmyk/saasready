@@ -1,4 +1,3 @@
-# backend/tests/test_audit_log_integrity.py
 import pytest
 
 def test_audit_log_created_on_org_update(client, auth_headers, db_session):
@@ -60,4 +59,4 @@ def test_audit_log_actor_is_correct(client, auth_headers, seed_roles, db_session
 
     # Verify actor is the user who performed the action
     assert log.actor_user_id == user.id
-    assert log.actor_user_id != None
+    assert log.actor_user_id is not None

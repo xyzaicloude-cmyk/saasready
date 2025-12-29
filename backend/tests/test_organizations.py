@@ -118,4 +118,4 @@ def test_cannot_delete_organization_as_member(client, test_user, test_org, seed_
 
     # Try to delete org (should fail)
     response = client.delete(f"/api/v1/orgs/{test_org.id}", headers=headers)
-    assert response.status_code in [403, 404, 405]  # Forbidden, Not Found, or Method Not AllowedAllowed
+    assert response.status_code in [403, 404, 405]  # Forbidden, Not Found, or Method Not Allowed
