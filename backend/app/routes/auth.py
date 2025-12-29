@@ -1199,6 +1199,85 @@ async def get_current_session_endpoint(
         "expires_at": current_session.expires_at.isoformat() if current_session.expires_at else None
     }
 
+@router.post("/logout")
+async def logout_user_endpoint(
+        request: Request,
+        authenticated_user: User = Depends(get_current_user),
+        db_session: Session = Depends(get_db)
+):
+    """
+    Logout user and revoke current token
+    """
+    logger.info(f"🔐 Logout request for user: {authenticated_user.email}")
+
+    try:
+        # Get token from header
+        auth_header = request.headers.get("authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authorization header"
+            )
+
+        token = auth_header.replace("Bearer ", "")
+
+        # Decode token to get JTI
+        from ..core.security import decode_access_token, revoke_token
+        payload = decode_access_token(token, db_session)
+
+        if payload and payload.get("jti"):
+            jti = payload.get("jti")
+            expires_at = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
+
+            # Revoke the token
+            revoke_token(
+                jti=jti,
+                user_id=authenticated_user.id,
+                expires_at=expires_at,
+                reason="user_logout",
+                db=db_session
+            )
+
+            # Mark session as inactive
+            from ..models.token_blacklist import UserSession
+            session = db_session.query(UserSession).filter(
+                UserSession.jti == jti,
+                UserSession.user_id == authenticated_user.id
+            ).first()
+
+            if session:
+                session.is_active = False
+                db_session.commit()
+
+        # Audit log
+        user_membership = db_session.query(Membership).filter(
+            Membership.user_id == authenticated_user.id
+        ).first()
+
+        if user_membership:
+            audit_logger = AuditService(db_session)
+            audit_logger.log_event(
+                actor_user_id=authenticated_user.id,
+                organization_id=user_membership.organization_id,
+                action="user.logout",
+                target_type="user",
+                target_id=authenticated_user.id,
+                metadata={"email": authenticated_user.email},
+                request=request
+            )
+
+        logger.info(f"✅ Logout successful: {authenticated_user.email}")
+
+        return {"message": "Logged out successfully"}
+
+    except Exception as e:
+        logger.error(f"❌ Logout error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Logout failed"
+        )
+
+
 
 # ==================== SYSTEM INITIALIZATION ====================
 logger.info("""
