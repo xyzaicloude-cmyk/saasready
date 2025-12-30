@@ -1,0 +1,40 @@
+# Include documentation
+include README.md
+include SDK_README.md
+include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+
+# Include configuration files
+include pyproject.toml
+include setup.py
+include setup.cfg
+
+# Include requirements
+include requirements.txt
+include requirements-dev.txt
+
+# Include type stubs
+include saasready/py.typed
+recursive-include saasready *.pyi
+
+# Include tests (optional - uncomment if you want to ship tests)
+# recursive-include tests *.py
+
+# Exclude compiled files
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude *.so
+global-exclude .DS_Store
+
+# Exclude development files
+prune docs/_build
+prune .github
+prune .pytest_cache
+prune .mypy_cache
+prune .tox
+prune htmlcov
+exclude .gitignore
+exclude .pre-commit-config.yaml
+exclude tox.ini
+exclude Makefile
