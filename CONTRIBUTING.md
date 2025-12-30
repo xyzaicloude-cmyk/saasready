@@ -105,8 +105,31 @@ docker-compose up --build
 - Keep first line under 50 characters
 - Reference issues when applicable
 
+
+
+## 📜 Code of Conduct
+## Our Pledge
+We are committed to providing a welcoming and inclusive experience for everyone.
+## Our Standards
+
+Be respectful and inclusive
+Accept constructive criticism
+Focus on what's best for the community
+Show empathy towards others
+
+## 🚫 Unacceptable Behavior
+
+Harassment or discriminatory language
+Personal attacks
+Trolling or insulting comments
+Publishing private information
+
+## Enforcement
+Violations can be reported to support@saasready.com. All complaints will be reviewed and investigated.
+
+
 ## Questions?
 
 Feel free to ask in [Discussions](https://github.com/yourusername/saasready/discussions) or open an issue.
 
-Thank you for contributing! 🎉
+Thank you for contributing to SaaSReady! 🎉
