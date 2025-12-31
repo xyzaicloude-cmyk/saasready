@@ -1,635 +1,699 @@
-# SaaSReady - Enterprise Multi-Tenant Authentication & Authorization
+# 🚀 SaaSReady - Enterprise-Grade Multi-Tenant Auth Platform
 
-**Drop-in authentication and authorization infrastructure for B2B SaaS applications.** Similar to WorkOS, Auth0, or Clerk, but self-hosted and fully customizable.
+> **Drop-in authentication infrastructure for B2B SaaS applications**  
+> Similar to Auth0, WorkOS, or Clerk, but **self-hosted** and **fully customizable**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green.svg)](https://fastapi.tiangolo.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-blue.svg)](https://www.postgresql.org/)
 
 ---
 
-## 🚀 **What is SaaSReady?**
+## 📖 **Table of Contents**
 
-SaaSReady is a production-ready authentication and multi-tenancy backend that handles:
-- **User Authentication** (JWT-based)
-- **Multi-Tenant Organizations** (workspace isolation)
-- **Role-Based Access Control (RBAC)** (permissions & roles)
-- **Member Invitations** (database-ready, email integration needed)
-- **Audit Logging** (track all user actions)
-- **Feature Flags** (gradual rollouts & A/B testing)
-- **Authentication** Secure JWT-based auth with email/password
-- **Admin Dashboard** Beautiful Next.js UI for managing organizations, members, and permissions
-- **Database Migrations** Alembic-powered schema versioning
-- **Docker Ready** Complete containerization with docker-compose
-- **MIT Licensed** Free to use for personal and commercial projects
-- **Perfect for B2B SaaS startups that need enterprise-grade auth without building from scratch**
+- [Why SaaSReady?](#why-saasready)
+- [Features](#features)
+- [Quick Start (5 Minutes)](#quick-start)
+- [Architecture](#architecture)
+- [Complete Setup Guide](#complete-setup-guide)
+- [API Documentation](#api-documentation)
+- [Security & Best Practices](#security)
+- [Production Deployment](#production-deployment)
+- [Python SDK](#python-sdk)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
 
 ---
 
-## 📋 **Features**
+## 🎯 **Why SaaSReady?**
 
-### ✅ **Core Authentication**
-- JWT-based user authentication
-- Secure password hashing (Argon2 + Bcrypt)
-- Session management with configurable token expiry
-- Protected endpoints with Bearer token auth
+Building multi-tenant B2B SaaS requires:
+- ✅ User authentication with JWT
+- ✅ Organization/workspace isolation
+- ✅ Role-based permissions (RBAC)
+- ✅ Team member invitations
+- ✅ Audit logging for compliance
+- ✅ Feature flags for gradual rollouts
 
-### ✅ **Multi-Tenancy**
-- Organization-based tenant isolation
-- Unique organization slugs (e.g., `acme-corp`)
-- Auto-creation of personal workspace on signup
-- Member management per organization
+**SaaSReady gives you all of this out of the box** - no vendor lock-in, full control over your data.
 
-### ✅ **RBAC (Role-Based Access Control)**
-- Pre-built roles: `Owner`, `Admin`, `Member`, `Viewer`
-- Granular permissions: `org.update`, `user.invite`, `audit.read`, etc.
-- Permission-based endpoint protection
-- Custom role creation support
+### **Comparison to Auth Providers**
 
-### ✅ **Member Invitations**
-- Invite users by email
-- Automatic account creation for new users
-- Membership status tracking (`active`, `invited`, `suspended`)
-- Role assignment during invitation
-
-### ✅ **Audit Logging**
-- Track all user actions (login, invite, role changes, etc.)
-- Store IP address, user agent, metadata
-- Organization-scoped logs
-- Queryable with pagination
-
-### ✅ **Feature Flags**
-- Global feature flags with default states
-- Organization-level overrides
-- Gradual rollout with percentage-based targeting
-- Toggle features without code deployments
-
-### 🛠️ **Admin UI Included**
-- React/Next.js frontend
-- Organization switcher
-- Member management with role assignment
-- Audit log viewer
-- Feature flag dashboard
+| Feature | SaaSReady | Auth0 | WorkOS | Clerk |
+|---------|-----------|-------|--------|-------|
+| **Self-Hosted** | ✅ | ❌ | ❌ | ❌ |
+| **Multi-Tenancy (Orgs)** | ✅ | ✅ | ✅ | ✅ |
+| **RBAC with Permissions** | ✅ | ✅ | ✅ | ✅ |
+| **Audit Logs** | ✅ | ✅ | ✅ | ✅ |
+| **Feature Flags** | ✅ | ❌ | ❌ | ❌ |
+| **Email Invitations** | ✅ | ✅ | ✅ | ✅ |
+| **2FA/MFA** | ✅ | ✅ | ✅ | ✅ |
+| **Admin UI** | ✅ | ✅ | ✅ | ✅ |
+| **Python SDK** | ✅ | ✅ | ✅ | ❌ |
+| **Open Source** | ✅ | ❌ | ❌ | ❌ |
+| **Cost** | **$0** | Paid | Paid | Paid |
 
 ---
 
-## 🏗️ **Architecture**
+## ⚡ **Features**
 
-```
-┌─────────────────┐
-│   Frontend      │ Next.js (React) + Tailwind CSS
-│   (Port 3000)   │ → Authentication, Org Management, Member Invites
-└────────┬────────┘
-         │ REST API (JWT)
-         ▼
-┌─────────────────┐
-│   Backend       │ FastAPI (Python) + SQLAlchemy
-│   (Port 8000)   │ → Auth, RBAC, Multi-Tenancy, Audit Logs
-└────────┬────────┘
-         │ PostgreSQL
-         ▼
-┌─────────────────┐
-│   Database      │ PostgreSQL 15
-│   (Port 5432)   │ → Users, Orgs, Roles, Permissions, Audit Logs
-└─────────────────┘
-```
+### **Authentication & Security**
+- 🔐 **JWT-Based Auth** - Secure token-based authentication with refresh tokens
+- 🛡️ **Token Revocation** - Instant logout across all devices
+- 🔒 **Brute Force Protection** - Progressive delays + account lockouts
+- 📱 **2FA/TOTP Support** - Time-based one-time passwords with backup codes
+- 🎭 **Device Fingerprinting** - Track suspicious login patterns
+- 📊 **Security Analytics** - Risk scoring and anomaly detection
+
+### **Multi-Tenancy**
+- 🏢 **Organizations** - Workspace isolation with unique slugs
+- 👥 **Team Management** - Invite members with role assignment
+- 📧 **Email Invitations** - Async queue with retry mechanism
+- ✉️ **SMTP Integration** - SendGrid/AWS SES/Custom SMTP support
+- 🔄 **Automatic Onboarding** - Pre-login invitation acceptance
+
+### **Authorization (RBAC)**
+- 🎭 **Pre-Built Roles** - Owner, Admin, Member, Viewer
+- 🔑 **Granular Permissions** - 15+ permission types
+- 🛡️ **Endpoint Protection** - Decorator-based permission checks
+- 📊 **Role Hierarchy** - Prevent privilege escalation
+- 🎯 **Custom Roles** - Create organization-specific roles
+
+### **Compliance & Auditing**
+- 📝 **Audit Logs** - Track all user actions with metadata
+- 🌍 **IP + User Agent Logging** - Full request context
+- 📊 **Queryable Logs** - Pagination + filtering support
+- 🔍 **90-Day Retention** - Automatic cleanup (configurable)
+
+### **Feature Management**
+- 🎯 **Feature Flags** - Global + organization-level overrides
+- 📊 **Percentage Rollouts** - A/B testing support
+- 🔄 **Runtime Toggles** - No code deployments needed
+
+### **Developer Experience**
+- 📚 **Python SDK** - Type-safe client library
+- 🔌 **REST API** - Comprehensive OpenAPI docs
+- 🐳 **Docker-Ready** - One-command deployment
+- ⚡ **Production-Grade** - Connection pooling, rate limiting, caching
 
 ---
 
-## 🚀 **Quick Start (5 minutes)**
+## 🚀 **Quick Start (5 Minutes)**
 
 ### **Prerequisites**
 - Docker & Docker Compose
 - Git
 
-### **1. Clone the Repository**
+### **Step 1: Clone & Setup**
+
 ```bash
-git clone https://github.com/ramprag/saasready.git
+git clone https://github.com/yourusername/saasready.git
 cd saasready
-```
 
-### **2. Configure Environment**
-```bash
-# Backend
+# Copy environment files
 cp backend/.env.example backend/.env
-
-# Frontend
 cp frontend/.env.local.example frontend/.env.local
 ```
 
-**Edit `backend/.env`** and change the secret key:
-```env
-SECRET_KEY=your-super-secret-key-min-32-chars-change-this-now
+### **Step 2: Generate Secure Keys**
+
+```bash
+# Generate SECRET_KEY (must be 32+ characters)
+python3 -c "import secrets; print(secrets.token_urlsafe(64))"
+
+# Copy output to backend/.env:
+# SECRET_KEY=<your-generated-key>
 ```
 
-### **3. Start the Stack**
+### **Step 3: Start Services**
+
 ```bash
 docker-compose up --build
 ```
 
-**Services will start:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
-- PostgreSQL: localhost:5432
+**Services will be available at:**
+- 🌐 **Frontend**: http://localhost:3000
+- 🔌 **Backend API**: http://localhost:8000
+- 📚 **API Docs**: http://localhost:8000/docs
+- 🐘 **PostgreSQL**: localhost:5432
+- 🔴 **Redis**: localhost:6379
 
-### **4. Create Your First Account**
+### **Step 4: Create Your First Account**
+
 1. Visit http://localhost:3000/register
 2. Sign up with email/password
 3. You'll auto-login and see your personal organization
 
-**Default seeded roles:**
-- `Owner` - Full access
-- `Admin` - Manage users & settings
-- `Member` - Read organization data
-- `Viewer` - Read-only access
+**🎉 That's it! You now have:**
+- ✅ Personal organization (you're the Owner)
+- ✅ JWT authentication working
+- ✅ RBAC with full permissions
+- ✅ Audit logging enabled
+- ✅ Feature flags system ready
 
 ---
 
-## 🔌 **API Integration Guide**
+## 🏗️ **Architecture**
+
+### **System Overview**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     CLIENT APPLICATIONS                      │
+│  (Web App, Mobile App, API Consumers)                       │
+└─────────────────────┬───────────────────────────────────────┘
+                      │ REST API (JWT)
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   SAASREADY PLATFORM                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
+│  │   Frontend   │  │   Backend    │  │   Worker     │     │
+│  │   Next.js    │  │   FastAPI    │  │  Background  │     │
+│  │  Port 3000   │  │  Port 8000   │  │    Tasks     │     │
+│  └──────────────┘  └──────────────┘  └──────────────┘     │
+└─────────────────────┬───────────────────────┬───────────────┘
+                      │                       │
+        ┌─────────────┴─────────┐    ┌───────┴────────┐
+        ▼                       ▼    ▼                │
+┌──────────────┐      ┌──────────────┐     ┌──────────────┐
+│  PostgreSQL  │      │    Redis     │     │ SMTP Service │
+│   Database   │      │   Cache +    │     │  (SendGrid/  │
+│  Port 5432   │      │ Rate Limit   │     │   AWS SES)   │
+└──────────────┘      └──────────────┘     └──────────────┘
+```
 
 ### **Authentication Flow**
 
-#### **1. Register a New User**
-```bash
-curl -X POST http://localhost:8000/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@company.com",
-    "password": "SecurePassword123",
-    "full_name": "John Doe"
-  }'
+```
+┌────────┐                                    ┌────────┐
+│ Client │                                    │  API   │
+└───┬────┘                                    └───┬────┘
+    │                                             │
+    │  POST /auth/login                           │
+    │  {email, password, 2fa_code?}              │
+    │────────────────────────────────────────────>│
+    │                                             │
+    │         1. Validate Credentials             │
+    │         2. Check Brute Force                │
+    │         3. Verify 2FA (if enabled)          │
+    │         4. Generate JWT + Session           │
+    │                                             │
+    │  200 OK                                     │
+    │  {access_token, refresh_token}             │
+    │<────────────────────────────────────────────│
+    │                                             │
+    │  Store tokens                               │
+    │                                             │
+    │  GET /orgs (with JWT)                       │
+    │  Authorization: Bearer <token>              │
+    │────────────────────────────────────────────>│
+    │                                             │
+    │         1. Decode JWT                       │
+    │         2. Check token_blacklist            │
+    │         3. Load user + permissions          │
+    │         4. Authorize request                │
+    │                                             │
+    │  200 OK                                     │
+    │  [organizations]                            │
+    │<────────────────────────────────────────────│
 ```
 
-**Response:**
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer"
-}
+### **Data Model**
+
+```
+User ──1:N──> Membership ──N:1──> Organization
+                │                      │
+                │                      │
+                ▼                      ▼
+              Role               OrgSettings
+                │
+                │
+                ▼
+           Permission
 ```
 
-**What happens:**
-- User account created
-- Personal organization auto-created (`john-doe-org`)
-- User assigned `Owner` role in their org
-- Returns JWT token (expires in 7 days by default)
+### **Permission Matrix**
+
+| Role | org.* | user.invite | user.manage | audit.read | api_key.manage |
+|------|-------|-------------|-------------|------------|----------------|
+| **Owner** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Admin** | ✅ (read/update) | ✅ | ✅ | ✅ | ❌ |
+| **Member** | ✅ (read only) | ❌ | ❌ | ✅ | ❌ |
+| **Viewer** | ✅ (read only) | ❌ | ❌ | ❌ | ❌ |
 
 ---
 
-#### **2. Login**
+## 📚 **Complete Setup Guide**
+
+### **Environment Configuration**
+
+#### **Backend (.env)**
+
 ```bash
-curl -X POST http://localhost:8000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@company.com",
-    "password": "SecurePassword123"
-  }'
+# Database (Required)
+DATABASE_URL=postgresql://user:pass@host:5432/dbname
+
+# Security (Required - CHANGE THIS!)
+SECRET_KEY=<generate-with-command-below>
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=10080  # 7 days
+
+# Frontend URL
+FRONTEND_BASE_URL=http://localhost:3000
+
+# Redis (Optional but recommended for production)
+REDIS_URL=redis://:password@localhost:6379/0
+
+# Email Service (Required for invitations)
+EMAIL_FROM=noreply@yourdomain.com
+EMAIL_SMTP_HOST=smtp.sendgrid.net
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USERNAME=apikey
+EMAIL_SMTP_PASSWORD=<your-sendgrid-api-key>
+EMAIL_USE_TLS=true
+
+# Rate Limiting
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_LOGIN=5
+RATE_LIMIT_REGISTER=3
+
+# Brute Force Protection
+MAX_LOGIN_ATTEMPTS=5
+ACCOUNT_LOCKOUT_MINUTES=30
 ```
 
-**Response:**
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer"
-}
+#### **Generate SECRET_KEY**
+
+```bash
+# Option 1: Python
+python3 -c "import secrets; print(secrets.token_urlsafe(64))"
+
+# Option 2: OpenSSL
+openssl rand -base64 64 | tr -d '\n'
+
+# Option 3: Using the app
+cd backend
+python -c "from app.core.config import generate_secret_key; print(generate_secret_key())"
+```
+
+#### **Frontend (.env.local)**
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 ```
 
 ---
 
-#### **3. Get Current User**
+### **Email Service Setup**
+
+SaaSReady has a **production-ready email service** with async queue and retry mechanism.
+
+#### **Supported Providers**
+
+1. **SendGrid** (Recommended)
+2. **AWS SES**
+3. **Custom SMTP**
+
+#### **SendGrid Setup**
+
 ```bash
-curl -X GET http://localhost:8000/api/v1/auth/me \
-  -H "Authorization: Bearer YOUR_TOKEN"
+# 1. Sign up at https://sendgrid.com
+# 2. Create API Key with "Mail Send" permission
+# 3. Add to backend/.env:
+
+EMAIL_SMTP_HOST=smtp.sendgrid.net
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USERNAME=apikey
+EMAIL_SMTP_PASSWORD=SG.your-api-key-here
+EMAIL_FROM=noreply@yourdomain.com
 ```
 
-**Response:**
-```json
+#### **AWS SES Setup**
+
+```bash
+EMAIL_SMTP_HOST=email-smtp.us-east-1.amazonaws.com
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USERNAME=<your-smtp-username>
+EMAIL_SMTP_PASSWORD=<your-smtp-password>
+EMAIL_FROM=noreply@yourdomain.com
+```
+
+#### **Testing Email Service**
+
+```bash
+# From backend directory
+python3 << EOF
+from app.services.email_service import email_service
+import asyncio
+
+async def test():
+    await email_service.send_verification_email(
+        to_email="test@example.com",
+        verify_link="https://app.example.com/verify?token=test"
+    )
+    print("✅ Email queued successfully")
+
+asyncio.run(test())
+EOF
+```
+
+---
+
+### **Database Migrations**
+
+SaaSReady uses **Alembic** for database migrations.
+
+```bash
+cd backend
+
+# Run all migrations
+alembic upgrade head
+
+# Check current version
+alembic current
+
+# View migration history
+alembic history
+
+# Create new migration (after model changes)
+alembic revision --autogenerate -m "Add new table"
+
+# Rollback last migration
+alembic downgrade -1
+```
+
+---
+
+### **Redis Setup (Production)**
+
+Redis is used for:
+- Rate limiting (distributed)
+- Session management
+- Email queue
+
+#### **Local Redis**
+
+```bash
+# Using Docker
+docker run -d --name redis \
+  -p 6379:6379 \
+  redis:7-alpine redis-server --requirepass your-password
+
+# Using Homebrew (Mac)
+brew install redis
+redis-server
+```
+
+#### **Managed Redis (Production)**
+
+- **AWS ElastiCache**
+- **Redis Cloud**
+- **DigitalOcean Managed Redis**
+
+```bash
+# Update backend/.env
+REDIS_URL=redis://:password@your-redis-host:6379/0
+```
+
+---
+
+## 📖 **API Documentation**
+
+### **Authentication**
+
+#### **Register User**
+
+```bash
+POST /api/v1/auth/register
+Content-Type: application/json
+
 {
-  "id": "uuid-here",
-  "email": "user@company.com",
+  "email": "user@example.com",
+  "password": "SecurePassword123!",
+  "full_name": "John Doe"
+}
+
+# Response
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "expires_in": 604800
+}
+```
+
+#### **Login**
+
+```bash
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "SecurePassword123!",
+  "two_factor_code": "123456"  # Optional, only if 2FA enabled
+}
+
+# Response
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "expires_in": 604800,
+  "requires_2fa": false
+}
+```
+
+#### **Get Current User**
+
+```bash
+GET /api/v1/auth/me
+Authorization: Bearer <token>
+
+# Response
+{
+  "id": "uuid",
+  "email": "user@example.com",
   "full_name": "John Doe",
   "is_active": true,
-  "is_superuser": false,
-  "created_at": "2025-01-20T10:30:00"
+  "is_email_verified": true,
+  "created_at": "2025-01-20T10:30:00Z"
 }
 ```
 
----
+### **Organizations**
 
-### **Organization Management**
+#### **Create Organization**
 
-#### **4. List User's Organizations**
 ```bash
-curl -X GET http://localhost:8000/api/v1/orgs \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
+POST /api/v1/orgs
+Authorization: Bearer <token>
+Content-Type: application/json
 
-**Response:**
-```json
-[
-  {
-    "id": "org-uuid",
-    "name": "Acme Corp",
-    "slug": "acme-corp",
-    "description": "Our main workspace",
-    "is_active": true,
-    "created_at": "2025-01-20T10:30:00",
-    "updated_at": "2025-01-20T10:30:00"
-  }
-]
-```
-
----
-
-#### **5. Create Organization**
-```bash
-curl -X POST http://localhost:8000/api/v1/orgs \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Engineering Team",
-    "slug": "engineering-team",
-    "description": "Development workspace"
-  }'
-```
-
-**Response:**
-```json
 {
-  "id": "new-org-uuid",
-  "name": "Engineering Team",
-  "slug": "engineering-team",
-  "description": "Development workspace",
-  "is_active": true,
-  "created_at": "2025-01-20T11:00:00",
-  "updated_at": "2025-01-20T11:00:00"
+  "name": "Acme Corp",
+  "slug": "acme-corp",
+  "description": "Our main workspace"
 }
-```
 
-**Note:** Creator automatically becomes `Owner` of the new org.
-
----
-
-### **Member Invitations**
-
-#### **6. Get Available Roles**
-```bash
-curl -X GET http://localhost:8000/api/v1/orgs/{org_id}/roles \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-**Response:**
-```json
-[
-  {
-    "id": "role-uuid-1",
-    "name": "Owner",
-    "description": "Full access to organization",
-    "is_system": true,
-    "created_at": "2025-01-20T10:00:00"
-  },
-  {
-    "id": "role-uuid-2",
-    "name": "Admin",
-    "description": "Administrative access",
-    "is_system": true,
-    "created_at": "2025-01-20T10:00:00"
-  }
-]
-```
-
----
-
-#### **7. Invite User to Organization**
-```bash
-curl -X POST http://localhost:8000/api/v1/orgs/{org_id}/invite \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "newuser@company.com",
-    "role_id": "role-uuid-2",
-    "full_name": "Jane Smith"
-  }'
-```
-
-**Response:**
-```json
-{
-  "id": "membership-uuid",
-  "user_id": "new-user-uuid",
-  "organization_id": "org-uuid",
-  "role_id": "role-uuid-2",
-  "status": "invited",
-  "created_at": "2025-01-20T11:30:00",
-  "user_email": "newuser@company.com",
-  "user_full_name": "Jane Smith",
-  "role_name": "Admin"
-}
-```
-
-**⚠️ Current Limitation:**
-- Creates membership with `invited` status
-- **No email is sent** (email service integration required)
-- User can login immediately with default password `changeme123`
-
-**To enable emails:** Integrate SendGrid/AWS SES in `org_service.py`
-
----
-
-#### **8. List Organization Members**
-```bash
-curl -X GET http://localhost:8000/api/v1/orgs/{org_id}/members \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-**Response:**
-```json
-[
-  {
-    "id": "membership-uuid",
-    "user_id": "user-uuid",
-    "organization_id": "org-uuid",
-    "role_id": "role-uuid",
-    "status": "active",
-    "created_at": "2025-01-20T10:30:00",
-    "user_email": "user@company.com",
-    "user_full_name": "John Doe",
-    "role_name": "Owner"
-  }
-]
-```
-
----
-
-#### **9. Update Member Role**
-```bash
-curl -X PATCH http://localhost:8000/api/v1/orgs/{org_id}/members/{membership_id}/role \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "role_id": "new-role-uuid"
-  }'
-```
-
-**Required Permission:** `user.manage`
-
----
-
-### **Permission-Protected Endpoints**
-
-#### **10. Update Organization (Requires `org.update`)**
-```bash
-curl -X PATCH http://localhost:8000/api/v1/orgs/{org_id} \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Updated Org Name",
-    "description": "New description"
-  }'
-```
-
-**Response:**
-```json
+# Response
 {
   "id": "org-uuid",
-  "name": "Updated Org Name",
+  "name": "Acme Corp",
   "slug": "acme-corp",
-  "description": "New description",
+  "description": "Our main workspace",
   "is_active": true,
-  "created_at": "2025-01-20T10:30:00",
-  "updated_at": "2025-01-20T12:00:00"
+  "created_at": "2025-01-20T10:30:00Z"
 }
 ```
 
-**Permission Check:**
-- Endpoint requires `org.update` permission
-- Only `Owner` and `Admin` roles have this by default
-- Returns `403 Forbidden` if user lacks permission
+#### **Invite Member**
 
----
-
-### **Audit Logs**
-
-#### **11. Get Organization Audit Logs**
 ```bash
-curl -X GET "http://localhost:8000/api/v1/audit/orgs/{org_id}/logs?limit=50&offset=0" \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
+POST /api/v1/orgs/{org_id}/invite
+Authorization: Bearer <token>
+Content-Type: application/json
 
-**Response:**
-```json
-[
-  {
-    "id": "log-uuid",
-    "actor_user_id": "user-uuid",
-    "organization_id": "org-uuid",
-    "action": "user.invite.sent",
-    "target_type": "membership",
-    "target_id": "membership-uuid",
-    "audit_metadata": {
-      "invited_email": "newuser@company.com",
-      "role_id": "role-uuid",
-      "inviter_id": "user-uuid"
-    },
-    "ip_address": "192.168.1.1",
-    "user_agent": "curl/7.81.0",
-    "created_at": "2025-01-20T11:30:00",
-    "actor_email": "admin@company.com"
-  }
-]
-```
-
-**Tracked Events:**
-- `user.registered`, `user.logged_in`, `user.invite.sent`
-- `user.role.updated`, `user.removed`
-- `org.created`, `org.updated`
-- `feature_flag.enabled`, `feature_flag.disabled`
-
----
-
-### **Feature Flags**
-
-#### **12. Get Organization Feature Flags**
-```bash
-curl -X GET http://localhost:8000/api/v1/orgs/{org_id}/feature-flags \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-**Response:**
-```json
-[
-  {
-    "key": "beta-new-ui",
-    "name": "Beta New UI",
-    "description": "Enable the new redesigned user interface",
-    "default_enabled": false,
-    "enabled": true,
-    "overridden": true,
-    "rollout_percent": null
-  },
-  {
-    "key": "ai-insights",
-    "name": "AI Insights",
-    "description": "Enable AI-powered analytics",
-    "default_enabled": false,
-    "enabled": false,
-    "overridden": false,
-    "rollout_percent": null
-  }
-]
-```
-
----
-
-#### **13. Toggle Feature Flag for Organization**
-```bash
-curl -X PUT http://localhost:8000/api/v1/orgs/{org_id}/feature-flags/beta-new-ui \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "enabled": true,
-    "rollout_percent": null
-  }'
-```
-
-**Response:**
-```json
 {
-  "key": "beta-new-ui",
-  "name": "Beta New UI",
-  "description": "Enable the new redesigned user interface",
-  "default_enabled": false,
-  "enabled": true,
-  "overridden": true,
-  "rollout_percent": null
+  "email": "newuser@example.com",
+  "role_id": "role-uuid",
+  "full_name": "Jane Smith"
 }
-```
 
----
-
-#### **14. Reset Feature Flag to Default**
-```bash
-curl -X DELETE http://localhost:8000/api/v1/orgs/{org_id}/feature-flags/beta-new-ui \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-**Response:**
-```json
+# Response
 {
-  "key": "beta-new-ui",
-  "name": "Beta New UI",
-  "description": "Enable the new redesigned user interface",
-  "default_enabled": false,
-  "enabled": false,
-  "overridden": false,
-  "rollout_percent": null
+  "id": "membership-uuid",
+  "user_id": "user-uuid",
+  "organization_id": "org-uuid",
+  "role_id": "role-uuid",
+  "status": "invited",
+  "invited_email": "newuser@example.com",
+  "invitation_expires_at": "2025-01-27T10:30:00Z"
 }
 ```
 
+**📧 Email Sent Automatically:**
+- ✅ Invitation email queued with retry mechanism
+- ✅ Contains unique invitation link
+- ✅ Expires in 7 days
+- ✅ Works for existing AND new users
+
 ---
 
-## 🛡️ **RBAC Implementation Guide**
+### **Full API Reference**
 
-### **How Permissions Work**
+Visit http://localhost:8000/docs for **interactive API documentation** (Swagger UI).
 
-SaaSReady uses a **Role → Permission** mapping system:
+---
 
+## 🐍 **Python SDK**
+
+### **Installation**
+
+```bash
+pip install saasready
 ```
-User → Membership (in Org) → Role → Permissions
-```
 
-### **Default Roles & Permissions**
-
-| Role    | Permissions                                                                                     |
-|---------|-------------------------------------------------------------------------------------------------|
-| Owner   | `org.*`, `user.*`, `role.*`, `audit.read`, `feature_flags.*`                                   |
-| Admin   | `org.read`, `org.update`, `user.invite`, `user.manage`, `audit.read`                          |
-| Member  | `org.read`, `audit.read`                                                                        |
-| Viewer  | `org.read`                                                                                      |
-
-### **Protecting Endpoints**
+### **Quick Start**
 
 ```python
-from app.core.dependencies import require_permission
+from saasready import SaaSReady
 
-@router.patch("/{org_id}")
-def update_organization(
-    org_id: str,
-    data: OrganizationUpdate,
-    membership: Membership = Depends(require_permission("org.update")),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    # Only users with org.update permission can access this
-    org = db.query(Organization).filter(Organization.id == org_id).first()
-    # ... update logic
+# Initialize client
+client = SaaSReady(
+    base_url="https://api.yourdomain.com",
+    timeout=30.0
+)
+
+# Register user
+response = client.auth.register(
+    email="user@example.com",
+    password="SecurePassword123!",
+    full_name="John Doe"
+)
+
+# Auto-authenticated after register
+print(f"Token: {response.access_token}")
+
+# List organizations
+orgs = client.orgs.list()
+
+# Invite team member
+admin_role = client.orgs.list_roles(org.id)[0]
+membership = client.orgs.invite_member(
+    org_id=org.id,
+    email="newuser@example.com",
+    role_id=admin_role.id,
+    full_name="Jane Smith"
+)
 ```
 
-### **Available Permissions**
+### **Error Handling**
 
 ```python
-# Organization
-"org.read"        # View organization details
-"org.update"      # Modify organization settings
-"org.delete"      # Delete organization
-"org.settings"    # Manage organization settings
+from saasready import (
+    AuthenticationError,
+    AuthorizationError,
+    RateLimitError
+)
 
-# Users
-"user.read"       # View user information
-"user.invite"     # Invite users to organization
-"user.manage"     # Change roles, remove users
-"user.create"     # Create new users
-"user.update"     # Update user information
-"user.delete"     # Delete users
+try:
+    response = client.auth.login("user@example.com", "wrong-password")
+except AuthenticationError as e:
+    print(f"Login failed: {e.message}")
+except RateLimitError as e:
+    print(f"Rate limited. Retry after {e.retry_after} seconds")
+```
 
-# Roles
-"role.read"       # View roles
-"role.manage"     # Create/edit roles and permissions
+**📚 [Complete SDK Documentation](./SDK_README.md)**
 
-# Audit
-"audit.read"      # View audit logs
+---
 
-# API Keys (model exists, not implemented)
-"api_key.manage"  # Create/delete API keys
+## 🔒 **Security & Best Practices**
 
-# Settings
-"settings.read"   # View settings
-"settings.update" # Modify settings
+### **What's Included**
+
+✅ **JWT with Revocation** - Instant logout across all devices  
+✅ **Argon2 Password Hashing** - No 72-byte bcrypt limit  
+✅ **Brute Force Protection** - Progressive delays + lockouts  
+✅ **2FA/TOTP Support** - Time-based one-time passwords  
+✅ **Device Fingerprinting** - Track suspicious patterns  
+✅ **Rate Limiting** - Redis-backed distributed limiting  
+✅ **CORS Protection** - Configurable origins  
+✅ **SQL Injection Prevention** - SQLAlchemy ORM  
+✅ **Audit Logging** - Track all security events
+
+### **Production Checklist**
+
+#### **Before Deploying:**
+
+```bash
+# 1. Change SECRET_KEY
+SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(64))")
+
+# 2. Use managed PostgreSQL
+DATABASE_URL=postgresql://user:pass@production-host:5432/saasready
+
+# 3. Use managed Redis
+REDIS_URL=redis://:password@production-redis:6379/0
+
+# 4. Configure email service
+EMAIL_SMTP_HOST=smtp.sendgrid.net
+EMAIL_SMTP_PASSWORD=<production-api-key>
+
+# 5. Enable HTTPS
+FRONTEND_BASE_URL=https://app.yourdomain.com
+
+# 6. Set proper CORS
+# Edit backend/app/main.py
+allow_origins=["https://app.yourdomain.com"]
+```
+
+#### **Security Headers**
+
+Already configured in `SecurityHeadersMiddleware`:
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 1; mode=block`
+- `Strict-Transport-Security: max-age=31536000`
+
+#### **Token Storage**
+
+⚠️ **Current**: Tokens stored in `localStorage`  
+✅ **Recommended**: Use `httpOnly` cookies for production
+
+```typescript
+// frontend/lib/api.ts
+// TODO: Update to use httpOnly cookies instead of localStorage
 ```
 
 ---
 
-## 🔧 **Development**
+## 🚢 **Production Deployment**
 
-### **Project Structure**
-```
-saasready/
-├── backend/
-│   ├── alembic/              # Database migrations
-│   ├── app/
-│   │   ├── core/             # Config, database, security
-│   │   ├── models/           # SQLAlchemy models
-│   │   ├── schemas/          # Pydantic schemas
-│   │   ├── routes/           # API endpoints
-│   │   ├── services/         # Business logic
-│   │   └── main.py           # FastAPI app
-│   ├── tests/                # Pytest tests
-│   ├── requirements.txt
-│   └── .env
-├── frontend/
-│   ├── app/                  # Next.js pages
-│   ├── components/           # React components
-│   ├── lib/                  # API client, types
-│   └── .env.local
-├── docker-compose.yml
-└── README.md
+### **Docker Deployment (Recommended)**
+
+```bash
+# 1. Update environment files
+cp backend/.env.production.example backend/.env
+cp frontend/.env.production.example frontend/.env.local
+
+# 2. Build images
+docker-compose -f docker-compose.prod.yml build
+
+# 3. Start services
+docker-compose -f docker-compose.prod.yml up -d
+
+# 4. Run migrations
+docker-compose exec backend alembic upgrade head
+
+# 5. Check logs
+docker-compose logs -f backend
 ```
 
-### **Local Development**
+### **Manual Deployment**
 
 #### **Backend**
+
 ```bash
 cd backend
 
@@ -639,226 +703,114 @@ pip install -r requirements.txt
 # Run migrations
 alembic upgrade head
 
-# Start server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Start with Gunicorn (production WSGI)
+gunicorn app.main:app \
+  --workers 4 \
+  --worker-class uvicorn.workers.UvicornWorker \
+  --bind 0.0.0.0:8000 \
+  --access-logfile - \
+  --error-logfile -
 ```
 
 #### **Frontend**
+
 ```bash
 cd frontend
 
 # Install dependencies
-npm install
+npm ci
 
-# Start dev server
-npm run dev
+# Build
+npm run build
+
+# Start production server
+npm start
 ```
 
-### **Database Migrations**
+### **Hosting Options**
 
-```bash
-# Create new migration
-alembic revision --autogenerate -m "Add new table"
-
-# Apply migrations
-alembic upgrade head
-
-# Rollback
-alembic downgrade -1
-```
-
-### **Run Tests**
-
-```bash
-cd backend
-pytest -v
-```
-
----
-
-## 📦 **Production Deployment**
-
-### **Environment Variables**
-
-**Backend (`backend/.env`):**
-```env
-DATABASE_URL=postgresql://user:pass@host:5432/dbname
-SECRET_KEY=your-super-secret-key-min-32-chars-long
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=10080  # 7 days
-```
-
-**Frontend (`frontend/.env.local`):**
-```env
-NEXT_PUBLIC_API_URL=https://api.yourapp.com/api/v1
-```
-
-### **Deployment Checklist**
-
-- [ ] Change `SECRET_KEY` to a strong random value (32+ chars)
-- [ ] Use managed PostgreSQL (AWS RDS, DigitalOcean, etc.)
-- [ ] Enable HTTPS/SSL for API and frontend
-- [ ] Set `ALGORITHM=HS256` (or RS256 for asymmetric JWT)
-- [ ] Configure CORS origins in `app/main.py`
-- [ ] Set up error tracking (Sentry)
-- [ ] Enable database backups
-- [ ] Review `SECURITY.md` for production hardening
-- [ ] Implement rate limiting (Redis-based)
-- [ ] Add email service (SendGrid, AWS SES)
-
-### **Docker Production**
-
-```bash
-# Build images
-docker-compose -f docker-compose.prod.yml build
-
-# Run in detached mode
-docker-compose -f docker-compose.prod.yml up -d
-```
-
----
-
-## 🔐 **Security**
-
-### **Best Practices Implemented**
-✅ JWT-based authentication with expiry  
-✅ Argon2 password hashing (72-byte limit safe)  
-✅ CORS protection  
-✅ SQL injection prevention (SQLAlchemy ORM)  
-✅ Audit logging with IP tracking  
-✅ Permission-based endpoint protection
-
-### **Security Considerations**
-⚠️ JWT tokens stored in localStorage (consider httpOnly cookies)  
-⚠️ Rate limiting is in-memory (use Redis for production)  
-⚠️ Email verification not enforced (flag exists)  
-⚠️ 2FA not implemented  
-⚠️ No email sending (invitation emails)
-
-**See `SECURITY.md` for detailed security guidelines.**
-
----
-
-## 🤝 **Comparison to Auth Providers**
-
-| Feature                     | SaaSReady | WorkOS | Auth0 | Clerk |
-|-----------------------------|-----------|--------|-------|-------|
-| Self-Hosted                 | ✅        | ❌     | ❌    | ❌    |
-| Multi-Tenancy (Orgs)        | ✅        | ✅     | ✅    | ✅    |
-| RBAC                        | ✅        | ✅     | ✅    | ✅    |
-| Audit Logs                  | ✅        | ✅     | ✅    | ✅    |
-| Feature Flags               | ✅        | ❌     | ❌    | ❌    |
-| SSO (SAML/OIDC)             | 🚧        | ✅     | ✅    | ✅    |
-| Email Invitations           | 🚧        | ✅     | ✅    | ✅    |
-| Admin UI Included           | ✅        | ✅     | ✅    | ✅    |
-| Open Source                 | ✅        | ❌     | ❌    | ❌    |
-| Free Tier                   | ✅ (Full) | ✅     | ✅    | ✅    |
-
-**Legend:** ✅ Available | ❌ Not Available | 🚧 Partial (DB-ready, needs email)
-
----
-
-## 🛣️ **Roadmap**
-
-### **Phase 1: Current MVP** ✅
-- [x] User authentication (JWT)
-- [x] Multi-tenant organizations
-- [x] RBAC with permissions
-- [x] Member invitations (DB-only)
-- [x] Audit logging
-- [x] Feature flags
-- [x] Admin UI
-
-### **Phase 2: Email & Invitations**
-- [ ] Email service integration (SendGrid/AWS SES)
-- [ ] Secure invitation tokens
-- [ ] Email templates (invite, password reset)
-- [ ] Password reset flow
-- [ ] Email verification enforcement
-
-### **Phase 3: SSO & Advanced Auth**
-- [ ] SAML 2.0 authentication
-- [ ] OIDC/OAuth2 providers
-- [ ] Google Workspace integration
-- [ ] Azure AD integration
-- [ ] 2FA/MFA support
-
-### **Phase 4: Enterprise Features**
-- [ ] API key authentication
-- [ ] Webhooks system
-- [ ] Custom role creation UI
-- [ ] Directory sync (SCIM)
-- [ ] Session management
-
-### **Phase 5: Scale & Performance**
-- [ ] Redis rate limiting
-- [ ] Horizontal scaling guide
-- [ ] Multi-region deployment
-- [ ] CDN integration
-- [ ] Performance monitoring
-
----
-
-## 📚 **API Documentation**
-
-**Interactive API Docs:**
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-
-**All endpoints return:**
-- `200 OK` - Success
-- `400 Bad Request` - Validation error
-- `401 Unauthorized` - Missing/invalid token
-- `403 Forbidden` - Insufficient permissions
-- `404 Not Found` - Resource not found
-- `500 Internal Server Error` - Server error
+- **AWS**: EC2 + RDS + ElastiCache
+- **DigitalOcean**: App Platform + Managed Postgres
+- **Railway**: One-click deploy
+- **Render**: Auto-deploy from GitHub
+- **Heroku**: Container deployment
 
 ---
 
 ## 🐛 **Troubleshooting**
 
 ### **"Organization not found" after registration**
-**Solution:** The organization is created but might not be returned immediately. Refresh the page or call `GET /api/v1/orgs` to list organizations.
+
+**Cause**: Database transaction timing  
+**Fix**: Refresh page or navigate to `/orgs`
 
 ### **"Failed to invite user"**
-**Check:**
-1. User has `user.invite` permission
-2. Role ID exists (call `GET /orgs/{org_id}/roles`)
-3. Email is valid
-4. User isn't already a member
+
+**Check**:
+1. User has `user.invite` permission ✅
+2. Role ID exists (call `GET /orgs/{org_id}/roles`) ✅
+3. Email is valid ✅
+4. Email service configured ✅
+
+```bash
+# Test email service
+docker-compose logs backend | grep "Email"
+```
 
 ### **"403 Forbidden" on protected endpoints**
-**Solution:** Check user's role has required permission. Use `GET /audit/orgs/{org_id}/logs` to see permission checks.
+
+**Cause**: Missing permissions  
+**Fix**: Check user's role has required permission
+
+```bash
+# View permissions for role
+GET /api/v1/orgs/{org_id}/roles
+```
 
 ### **Database connection errors**
-**Solution:**
+
 ```bash
-# Check if PostgreSQL is running
-docker-compose ps
+# Check PostgreSQL
+docker-compose ps db
 
 # View logs
 docker-compose logs db
 
-# Restart services
-docker-compose restart
+# Restart
+docker-compose restart db
 ```
 
 ### **Frontend can't connect to backend**
-**Solution:** Verify `NEXT_PUBLIC_API_URL` in `frontend/.env.local` matches your backend URL.
+
+**Check**:
+1. `NEXT_PUBLIC_API_URL` in `frontend/.env.local`
+2. Backend is running on port 8000
+3. CORS is configured correctly
 
 ---
 
 ## 🤝 **Contributing**
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **Quick Start:**
-1. Fork the repo
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Make changes and test
-4. Commit: `git commit -m "Add my feature"`
-5. Push: `git push origin feature/my-feature`
-6. Open a Pull Request
+```bash
+# Fork the repo
+git clone https://github.com/yourusername/saasready.git
+cd saasready
+
+# Create feature branch
+git checkout -b feature/my-feature
+
+# Make changes and test
+docker-compose up --build
+
+# Commit
+git commit -m "feat: add my feature"
+
+# Push and create PR
+git push origin feature/my-feature
+```
 
 ---
 
@@ -876,18 +828,22 @@ Built with:
 - [PostgreSQL](https://www.postgresql.org/) - Database
 - [Next.js](https://nextjs.org/) - React framework
 - [Tailwind CSS](https://tailwindcss.com/) - CSS framework
+- [Redis](https://redis.io/) - Caching & rate limiting
 
-Inspired by [WorkOS](https://workos.com/), [Auth0](https://auth0.com/), and [Clerk](https://clerk.com/).
-
----
-
-## 📞 **Support**
-
-- 📖 [Documentation](https://github.com/yourusername/saasready/wiki)
-- 💬 [Discussions](https://github.com/yourusername/saasready/discussions)
-- 🐛 [Report Bug](https://github.com/yourusername/saasready/issues)
-- 💡 [Request Feature](https://github.com/yourusername/saasready/issues)
+Inspired by [Auth0](https://auth0.com/), [WorkOS](https://workos.com/), and [Clerk](https://clerk.com/).
 
 ---
 
-**Made with ❤️ for the SaaS community**
+## 📞 **Support & Community**
+
+- 📖 **Documentation**: https://docs.saasready.com
+- 💬 **Discord**: https://discord.gg/saasready
+- 🐛 **Report Bug**: [GitHub Issues](https://github.com/yourusername/saasready/issues)
+- 💡 **Request Feature**: [GitHub Discussions](https://github.com/yourusername/saasready/discussions)
+- 📧 **Email**: support@saasready.com
+
+---
+
+**⭐ Star us on GitHub if SaaSReady helped you!**
+
+Made with ❤️ for the SaaS community
