@@ -107,7 +107,7 @@ Building multi-tenant B2B SaaS requires:
 ### **Step 1: Clone & Setup**
 
 ```bash
-git clone https://github.com/yourusername/saasready.git
+git clone https://github.com/ramprag/saasready.git
 cd saasready
 
 # Copy environment files
@@ -796,7 +796,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 **Quick Start:**
 ```bash
 # Fork the repo
-git clone https://github.com/yourusername/saasready.git
+git clone https://github.com/ramprag/saasready.git
 cd saasready
 
 # Create feature branch
@@ -838,8 +838,8 @@ Inspired by [Auth0](https://auth0.com/), [WorkOS](https://workos.com/), and [Cle
 
 - 📖 **Documentation**: https://docs.saasready.com
 - 💬 **Discord**: https://discord.gg/saasready
-- 🐛 **Report Bug**: [GitHub Issues](https://github.com/yourusername/saasready/issues)
-- 💡 **Request Feature**: [GitHub Discussions](https://github.com/yourusername/saasready/discussions)
+- 🐛 **Report Bug**: [GitHub Issues](https://github.com/ramprag/saasready/issues)
+- 💡 **Request Feature**: [GitHub Discussions](https://github.com/ramprag/saasready/discussions)
 - 📧 **Email**: support@saasready.com
 
 ---
