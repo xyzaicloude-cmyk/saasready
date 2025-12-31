@@ -199,7 +199,7 @@ CREATE INDEX idx_login_attempts_composite ON login_attempts(identifier, device_i
 
 ### **Defense in Depth**
 
-![Defence in Depth](./docs/images/depth_in_security.png)
+![Defence in Depth](./images/depth_in_security.png)
 
 ### **Token Security**
 
@@ -245,7 +245,7 @@ CREATE INDEX idx_login_attempts_composite ON login_attempts(identifier, device_i
 ![2FA flow](./images/2fa_login.png)
 
 ### **3. Token Refresh Flow**
-![token refresh flow](./images/token_refresh.png)]
+![token refresh flow](./images/token_refresh.png)
 ---
 
 ## 🛡️ Authorization Model
