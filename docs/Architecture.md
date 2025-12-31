@@ -20,7 +20,7 @@
 
 ## 🌐 System Overview
 
-![System Overview Architecture](./docs/images/system_overview.png)
+![System Overview Architecture](./images/system_overview.png)
 ### **High-Level Architecture**
 
 
@@ -166,7 +166,7 @@ def is_enabled(org_id, flag_key):
 
 ### **Entity Relationship Diagram**
 
-![ERD](./docs/images/ER_Diagram.png)
+![ERD](./images/ER_Diagram.png)
 
 
 ### **Database Indexes**
@@ -199,7 +199,7 @@ CREATE INDEX idx_login_attempts_composite ON login_attempts(identifier, device_i
 
 ### **Defense in Depth**
 
-![Defence in Depth](./docs/images/depth_in_security.png)
+![Defence in Depth](./images/depth_in_security.png)
 
 ### **Token Security**
 
@@ -239,20 +239,20 @@ CREATE INDEX idx_login_attempts_composite ON login_attempts(identifier, device_i
 ## 🔐 Authentication Flows
 
 ### **1. Registration Flow**
-![Registration flow](./docs/images/Registration_flow.png)
+![Registration flow](./images/Registration_flow.png)
 
 ### **2. Login Flow with 2FA**
-![2FA flow](./docs/images/2fa_login.png)
+![2FA flow](./images/2fa_login.png)
 
 ### **3. Token Refresh Flow**
-![token refresh flow](./docs/images/token_refresh.png)]
+![token refresh flow](./images/token_refresh.png)
 ---
 
 ## 🛡️ Authorization Model
 
 ### **Permission Check Fl
 ow**
-![Permission Check Flow](./docs/images/authorization_flow(RBAC).png)
+![Permission Check Flow](./images/authorization_flow(RBAC).png)
 
 
 ### **Permission Enforcement**

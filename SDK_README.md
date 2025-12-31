@@ -482,7 +482,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/saasready.git
+git clone https://github.com/ramprag/saasready.git
 cd saasready
 
 # Install development dependencies
@@ -510,9 +510,9 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## 🔗 **Links**
 
 - **Documentation**: https://docs.saasready.com
-- **GitHub**: https://github.com/yourusername/saasready
+- **GitHub**: https://github.com/ramprag/saasready
 - **PyPI**: https://pypi.org/project/saasready/
-- **Issues**: https://github.com/yourusername/saasready/issues
+- **Issues**: https://github.com/ramprag/saasready/issues
 - **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
 ---
@@ -520,8 +520,8 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## 📞 **Support**
 
 - 📧 Email: support@saasready.com
-- 💬 GitHub Discussions: https://github.com/yourusername/saasready/discussions
-- 🐛 Report Bug: https://github.com/yourusername/saasready/issues
+- 💬 GitHub Discussions: https://github.com/ramprag/saasready/discussions
+- 🐛 Report Bug: https://github.com/ramprag/saasready/issues
 
 ---
 
