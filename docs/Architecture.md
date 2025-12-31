@@ -242,7 +242,7 @@ CREATE INDEX idx_login_attempts_composite ON login_attempts(identifier, device_i
 ![Registration flow](./docs/images/Registration_flow.png)
 
 ### **2. Login Flow with 2FA**
-![2FA flow](./docs/images/2fa_login.png)]
+![2FA flow](./docs/images/2fa_login.png)
 
 ### **3. Token Refresh Flow**
 ![token refresh flow](./docs/images/token_refresh.png)]
