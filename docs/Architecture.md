@@ -250,8 +250,9 @@ CREATE INDEX idx_login_attempts_composite ON login_attempts(identifier, device_i
 
 ## 🛡️ Authorization Model
 
-### **Permission Check Flow**
-![Permission Check FLow](./docs/images/authorization_flow(RBAC).png)
+### **Permission Check Fl
+ow**
+![Permission Check Flow](./docs/images/authorization_flow(RBAC).png)
 
 
 ### **Permission Enforcement**
