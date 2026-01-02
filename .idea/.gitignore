@@ -1,3 +1,13 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+.env
+.env.local
+.env.production
+.env.*.local
+backend/.env
+frontend/.env.local
+**/secrets/
+**/*.key
+**/*.pem
+**/*.crt
