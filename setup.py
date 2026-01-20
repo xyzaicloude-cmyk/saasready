@@ -61,12 +61,12 @@ setup(
     description="Enterprise-grade authentication and multi-tenancy SDK for Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/saasready",
+    url="https://github.com/ramprag/saasready",
     project_urls={
         "Documentation": "https://docs.saasready.com",
-        "Bug Reports": "https://github.com/yourusername/saasready/issues",
-        "Source": "https://github.com/yourusername/saasready",
-        "Changelog": "https://github.com/yourusername/saasready/blob/main/CHANGELOG.md",
+        "Bug Reports": "https://github.com/ramprag/saasready/issues",
+        "Source": "https://github.com/ramprag/saasready",
+        "Changelog": "https://github.com/ramprag/saasready/blob/main/CHANGELOG.md",
     },
     packages=find_packages(exclude=["tests", "tests.*", "docs", "examples"]),
     classifiers=[

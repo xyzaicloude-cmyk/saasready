@@ -80,11 +80,11 @@ async = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/saasready"
+Homepage = "https://github.com/ramprag/saasready"
 Documentation = "https://docs.saasready.com"
-Repository = "https://github.com/yourusername/saasready"
-"Bug Reports" = "https://github.com/yourusername/saasready/issues"
-Changelog = "https://github.com/yourusername/saasready/blob/main/CHANGELOG.md"
+Repository = "https://github.com/ramprag/saasready"
+"Bug Reports" = "https://github.com/ramprag/saasready/issues"
+Changelog = "https://github.com/ramprag/saasready/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 packages = ["saasready"]
