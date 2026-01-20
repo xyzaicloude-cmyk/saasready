@@ -1,0 +1,139 @@
+# Core Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Database
+sqlalchemy==2.0.25
+alembic==1.13.1
+psycopg2-binary==2.9.9
+
+# Data Validation
+pydantic==2.5.3
+pydantic-settings==2.1.0
+email-validator==2.1.0
+
+# Security & Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+argon2-cffi==23.1.0
+cryptography==41.0.7
+
+# Caching & Session Management
+redis==5.0.1
+hiredis==2.3.2  # Faster Redis protocol parser
+
+# Rate Limiting & Throttling
+slowapi==0.1.9
+
+# HTTP Requests (for drop-in mode)
+requests==2.31.0
+httpx==0.26.0
+aiohttp==3.9.1
+
+# Monitoring & Logging
+python-json-logger==2.0.7
+structlog==24.1.0
+
+# Metrics & Instrumentation
+prometheus-client==0.19.0
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0
+opentelemetry-instrumentation-fastapi==0.42b0
+opentelemetry-instrumentation-sqlalchemy==0.42b0
+
+# Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+faker==22.0.0
+factory-boy==3.3.0
+
+# Code Quality
+black==23.12.1
+flake8==7.0.0
+mypy==1.8.0
+pylint==3.0.3
+isort==5.13.2
+
+# Development Tools
+ipython==8.19.0
+ipdb==0.13.13
+
+# Documentation
+mkdocs==1.5.3
+mkdocs-material==9.5.3
+
+# Async Support
+asyncpg==0.29.0  # Async PostgreSQL driver
+aioredis==2.0.1  # Async Redis
+
+# Utilities
+python-dateutil==2.8.2
+python-dotenv==1.0.0
+tenacity==8.2.3  # Retry library
+backoff==2.2.1   # Another retry library
+
+# Idempotency
+ulid-py==1.1.0  # Better than UUID for idempotency keys
+
+# Circuit Breaker
+pybreaker==1.0.1
+
+# Health Checks
+health-check>=3.4.1,<4.0.0
+
+
+
+# Security Headers
+secure==0.3.0
+
+# Request ID / Correlation ID
+starlette-context==0.3.6
+
+# Background Tasks
+celery==5.3.4
+
+# Scheduler (optional)
+apscheduler==3.10.4
+
+# PDF Generation (optional)
+reportlab==4.0.9
+
+# Excel Export (optional)
+openpyxl==3.1.2
+xlsxwriter==3.1.9
+
+# Image Processing (optional)
+pillow==10.2.0
+
+# Webhooks (optional)
+svix==1.14.0
+
+# GeoIP (optional)
+geoip2==4.7.0
+
+# Phone Number Validation (optional)
+phonenumbers==8.13.27
+
+# Two-Factor Auth (optional)
+pyotp==2.9.0
+qrcode==7.4.2
+
+# SAML/SSO Support (optional)
+python3-saml==1.16.0
+
+# Production WSGI Server
+gunicorn==21.2.0
+
+# Memory Profiling (development)
+memory-profiler==0.61.0
+objgraph==3.6.0
+
+# Performance Testing
+locust==2.20.0
+pyotp==2.9.0
+qrcode==7.4.2
+ua-parser==0.18.0

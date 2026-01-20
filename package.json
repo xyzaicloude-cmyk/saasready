@@ -1,0 +1,44 @@
+{
+  "name": "saasready",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "type": "commonjs",
+  "description": "**Drop-in authentication and authorization infrastructure for B2B SaaS applications.** Similar to WorkOS, Auth0, or Clerk, but self-hosted and fully customizable.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ramprag/saasready.git"
+  },
+  "homepage": "https://github.com/ramprag/saasready#readme",
+  "bugs": {
+    "url": "https://github.com/ramprag/saasready/issues"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "clean": "rimraf packages/*/dist",
+    "build:js-sdk": "npm run build --workspace=@saasready/js-sdk",
+    "build:react": "npm run build --workspace=@saasready/react",
+    "build:nextjs": "npm run build --workspace=@saasready/nextjs",
+    "build:packages": "npm run build:js-sdk && npm run build:react && npm run build:nextjs",
+    "build": "npm run build:packages",
+    "dev": "npm run dev --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "pack-and-install-test-app": "node ./scripts/pack-install-test-app.cjs",
+    "publish:all": "npm run build:packages && npx lerna publish"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "eslint": "^9.39.1",
+    "lerna": "^8.2.4",
+    "rimraf": "^5.0.0",
+    "tsup": "^8.5.1",
+    "turbo": "^1.13.4",
+    "typescript": "^5.9.3"
+  }
+}

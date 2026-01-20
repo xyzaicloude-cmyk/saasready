@@ -1,0 +1,54 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+
+# Environment files
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+frontend/.env.local
+frontend/.env.*
+
+# Secrets and credentials
+**/secrets/
+**/*.key
+**/*.pem
+**/*.crt
+**/*.p12
+**/*.pfx
+
+# IDE specific
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# Node.js (frontend)
+node_modules/
+.next/
+out/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+*.sqlite3
