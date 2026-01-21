@@ -1,0 +1,50 @@
+.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 60px);
+    padding: 2rem;
+    text-align: center;
+    background: radial-gradient(circle at 50% 10%, rgba(99, 102, 241, 0.1) 0%, transparent 40%);
+}
+
+.title {
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--ifm-color-primary) 0%, #db2777 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.tagline {
+    font-size: 1.5rem;
+    color: var(--ifm-color-emphasis-700);
+    margin-bottom: 3rem;
+    max-width: 700px;
+    line-height: 1.5;
+}
+
+.getStarted {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #fff !important;
+    background: linear-gradient(135deg, var(--ifm-color-primary) 0%, var(--ifm-color-primary-dark) 100%);
+    border-radius: 9999px;
+    /* Pill shape */
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
+}
+
+.getStarted:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px 0 rgba(99, 102, 241, 0.45);
+    background: linear-gradient(135deg, var(--ifm-color-primary-light) 0%, var(--ifm-color-primary) 100%);
+    text-decoration: none;
+}

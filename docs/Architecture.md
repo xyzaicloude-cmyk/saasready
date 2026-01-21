@@ -1,3 +1,8 @@
+---
+title: System Architecture
+description: Learn about the internal architecture of SaaSReady, including the tech stack, core components, and data model for multi-tenant authentication.
+keywords: [SaaS architecture, FastAPI architecture, multi-tenant system design, auth system architecture]
+---
 # 🏗️ SaaSReady Architecture Documentation
 
 > **Enterprise-grade multi-tenant authentication platform architecture**
@@ -530,7 +535,7 @@ class BackgroundTasks:
 ## 📚 Additional Resources
 
 - [API Documentation](./api-reference.md)
-- [Security Model](../SECURITY.md)
+- [Security Model](https://github.com/ramprag/saasready/blob/main/SECURITY.md)
 - [Deployment Guide](./deployment.md)
 
 ---

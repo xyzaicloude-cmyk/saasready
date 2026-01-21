@@ -1,3 +1,8 @@
+---
+title: Platform Features
+description: Deep dive into SaaSReady features including 2FA, session management, password resets, and brute-force protection.
+keywords: [SaaS auth features, 2FA TOTP implementation, session management security, brute force protection]
+---
 # Feature Documentation
 
 This document provides detailed information about SaaSReady's security and authentication features.

@@ -1,3 +1,8 @@
+---
+title: Initial Setup & Configuration
+description: Complete guide to configuring SaaSReady. Setup environment variables, databases, Redis, and email providers for your auth backend.
+keywords: [saasready configuration, self-hosted auth setup, setup guide b2b saas, auth backend config]
+---
 # Setup Guide
 
 Complete configuration guide for SaaSReady platform.
