@@ -53,5 +53,5 @@ SaaSReady provides a dedicated API endpoint for retrieving logs, making it easy 
 
 ```python
 # List audit logs for an organization
-logs = client.orgs.get_audit_logs(org_id=org.id)
+logs = client.audit.get_logs(org_id=org.id)
 ```
