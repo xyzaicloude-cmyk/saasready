@@ -14,20 +14,6 @@ const config: Config = {
   onBrokenMarkdownLinks: 'warn',
   trailingSlash: false,
 
-  // SEO metadata
-  metadata: [
-    {
-      name: 'keywords',
-      content: 'auth0 alternative, workos alternative, clerk alternative, self-hosted authentication, open source auth, multi-tenant auth, saas authentication, rbac, python auth'
-    },
-    {
-      name: 'description',
-      content: 'SaaSReady is an open-source, self-hosted alternative to Auth0, WorkOS, and Clerk. Get enterprise authentication, RBAC, and multi-tenancy for free.'
-    },
-    { property: 'og:type', content: 'website' },
-    { name: 'twitter:card', content: 'summary_large_image' },
-  ],
-
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
@@ -54,6 +40,19 @@ const config: Config = {
     ],
   ],
   themeConfig: {
+    // SEO metadata
+    metadata: [
+      {
+        name: 'keywords',
+        content: 'auth0 alternative, workos alternative, clerk alternative, self-hosted authentication, open source auth, multi-tenant auth, saas authentication, rbac, python auth'
+      },
+      {
+        name: 'description',
+        content: 'SaaSReady is an open-source, self-hosted alternative to Auth0, WorkOS, and Clerk. Get enterprise authentication, RBAC, and multi-tenancy for free.'
+      },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+    ],
     navbar: {
       title: 'SaaSReady',
       logo: {
