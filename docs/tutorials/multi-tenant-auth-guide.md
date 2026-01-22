@@ -491,7 +491,7 @@ A: Yes! SaaSReady includes:
 
 - [📖 Full Documentation](../index.md)
 - [🔌 API Reference](../api-reference.md)
-- [🐍 Python SDK Reference](../../SDK_README.md)
+- [🐍 Python SDK Reference](https://github.com/ramprag/saasready/blob/master/SDK_README.md)
 - [🚀 Deployment Guide](../deployment.md)
 - [💬 Community Support](https://github.com/ramprag/saasready/discussions)
 

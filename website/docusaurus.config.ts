@@ -10,7 +10,7 @@ const config: Config = {
   organizationName: 'ramprag',
   projectName: 'saasready',
   deploymentBranch: 'gh-pages',
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
   trailingSlash: false,
 

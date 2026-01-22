@@ -270,7 +270,7 @@ docker-compose up --build
 A: Q2 2026. You can track progress on our [GitHub roadmap](https://github.com/ramprag/saasready/projects).
 
 **Q: Can I contribute to the SSO implementation?**  
-A: Yes! We welcome contributions. See [CONTRIBUTING.md](../../CONTRIBUTING.md).
+A: Yes! We welcome contributions. See [CONTRIBUTING.md](https://github.com/ramprag/saasready/blob/master/CONTRIBUTING.md).
 
 **Q: How do audit logs compare?**  
 A: SaaSReady includes comprehensive audit logging for free. WorkOS charges $299/month for the same feature.
