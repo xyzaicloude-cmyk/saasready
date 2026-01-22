@@ -50,6 +50,10 @@ const config: Config = {
         name: 'description',
         content: 'SaaSReady is an open-source, self-hosted alternative to Auth0, WorkOS, and Clerk. Get enterprise authentication, RBAC, and multi-tenancy for free.'
       },
+      {
+        name: 'google-site-verification',
+        content: 'F69FeYAHqQnbvOaSlEre6xxs2Ykcd2DULo34FH8oCBk'
+      },
       { property: 'og:type', content: 'website' },
       { name: 'twitter:card', content: 'summary_large_image' },
     ],
