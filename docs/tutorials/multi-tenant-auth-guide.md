@@ -131,7 +131,7 @@ org = client.orgs.create(
 print(f"Organization created!")
 print(f"ID: {org.id}")
 print(f"Slug: {org.slug}")
-print(f"You are: {org.your_role}")  # Owner
+# Creator is automatically assigned as Owner
 ```
 
 ### List User's Organizations
@@ -141,7 +141,7 @@ print(f"You are: {org.your_role}")  # Owner
 orgs = client.orgs.list()
 
 for org in orgs:
-    print(f"{org.name} - Role: {org.your_role}")
+    print(f"{org.name} (slug: {org.slug})")
 ```
 
 ---
@@ -282,17 +282,16 @@ for inv in invitations:
 
 ```python
 # Generate TOTP secret
-totp_response = client.auth.enable_2fa()
+totp_response = client.auth.setup_2fa()
 
-print(f"Secret: {totp_response.secret}")
-print(f"QR Code URL: {totp_response.qr_code_url}")
-print(f"Backup codes: {totp_response.backup_codes}")
+print(f"Secret: {totp_response['secret']}")
+print(f"QR Code URL: {totp_response['qr_code_url']}")
 
 # User scans QR code with authenticator app (Google Authenticator, Authy)
 
-# Verify TOTP code
-client.auth.verify_2fa(code="123456")
-print("2FA enabled!")
+# Verify TOTP code to activate 2FA
+result = client.auth.verify_2fa(code="123456")
+print(f"2FA enabled! Backup codes: {result['backup_codes']}")
 ```
 
 ### Login with 2FA
