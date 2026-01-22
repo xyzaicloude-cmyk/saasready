@@ -260,8 +260,10 @@ from saasready import SaaSReady
 client = SaaSReady(base_url="...")
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
-    user = client.auth.verify_token(token)
-    if not user:
+    client.set_token(token)
+    try:
+        user = client.auth.me()
+    except Exception:
         raise HTTPException(status_code=401)
     return user
 ```

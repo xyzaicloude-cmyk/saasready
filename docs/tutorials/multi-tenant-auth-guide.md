@@ -190,9 +190,14 @@ client = SaaSReady(base_url="http://localhost:8000")
 def require_permission(permission: str):
     async def check_permission(authorization: str = Header()):
         token = authorization.replace("Bearer ", "")
-        user = client.auth.verify_token(token)
+        # Set the token and fetch user details
+        client.set_token(token)
+        try:
+            user = client.auth.me()
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid token")
         
-        if not user or permission not in user.permissions:
+        if permission not in user.permissions:
             raise HTTPException(status_code=403, detail="Insufficient permissions")
         
         return user
@@ -293,24 +298,19 @@ print("2FA enabled!")
 ### Login with 2FA
 
 ```python
-# Step 1: Login (returns 2FA required)
-try:
-    response = client.auth.login(
-        email="founder@acme.com",
-        password="SecurePass123!"
-    )
-except TwoFactorRequiredException as e:
-    print("2FA required")
-    temp_token = e.temp_token
-
-# Step 2: Submit TOTP code
-response = client.auth.verify_2fa_login(
-    temp_token=temp_token,
-    code="123456"  # From authenticator app
+# Login with 2FA code from authenticator app
+response = client.auth.login(
+    email="founder@acme.com",
+    password="SecurePass123!",
+    two_factor_code="123456"  # Code from authenticator app
 )
 
 print("Logged in with 2FA!")
+print(f"Access token: {response.access_token}")
 ```
+
+> **Note:** If the user has 2FA enabled but doesn't provide the code, the login will fail. 
+> For initial 2FA setup, use `client.auth.setup_2fa()` followed by `client.auth.verify_2fa(code)`.
 
 ---
 
@@ -388,8 +388,10 @@ class LoginRequest(BaseModel):
 # Dependency: Get current user
 async def get_current_user(authorization: str = Header()):
     token = authorization.replace("Bearer ", "")
-    user = client.auth.verify_token(token)
-    if not user:
+    client.set_token(token)
+    try:
+        user = client.auth.me()
+    except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
     return user
 

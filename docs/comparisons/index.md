@@ -34,8 +34,8 @@ Best for: B2B SaaS startups needing enterprise features without enterprise prici
 ### [SaaSReady vs Clerk](./clerk.md)
 Best for: Python developers who prefer REST APIs over React-focused SDKs.
 
-### [SaaSReady vs Firebase](./firebase.md)
-Best for: Projects outgrowing Firebase's vendor lock-in and wanting SQL databases.
+### SaaSReady vs Firebase
+Best for: Projects outgrowing Firebase's vendor lock-in and wanting SQL databases. See the [Firebase Migration Guide](../migration/from-firebase.md) for details.
 
 ## Who Should Use SaaSReady?
 

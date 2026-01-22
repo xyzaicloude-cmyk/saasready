@@ -40,7 +40,7 @@ const config: Config = {
           path: '../docs',
           routeBasePath: 'docs',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/ramprag/saasready/edit/main/docs/',
+          editUrl: 'https://github.com/ramprag/saasready/edit/master/docs/',
         },
         blog: false,
         theme: {
