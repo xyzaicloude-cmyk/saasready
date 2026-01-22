@@ -6,21 +6,27 @@ on:
     paths:
       - 'docs/**'
       - 'website/**'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+permissions:
+  contents: write
 
 jobs:
   build:
     name: Build & Deploy Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'npm'
-          cache-dependency-path: website/package-lock.json
+          cache-dependency-path: website/package.json
 
       - name: Install dependencies
         working-directory: website
@@ -37,3 +43,4 @@ jobs:
           publish_dir: ./website/build
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
+          force_orphan: true # Keeps the gh-pages branch clean
