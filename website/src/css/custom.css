@@ -1,0 +1,46 @@
+/* Import Inter Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Premium Brand Colors (Stripe/Auth0 style blurple) */
+    --ifm-color-primary: #6366f1;
+    --ifm-color-primary-dark: #4f46e5;
+    --ifm-color-primary-darker: #4338ca;
+    --ifm-color-primary-darkest: #3730a3;
+    --ifm-color-primary-light: #818cf8;
+    --ifm-color-primary-lighter: #a5b4fc;
+    --ifm-color-primary-lightest: #c7d2fe;
+
+    --ifm-font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+    --ifm-code-font-size: 90%;
+}
+
+/* Dark Mode Polish */
+[data-theme='dark'] {
+    --ifm-background-color: #0f172a;
+    /* Slate 900 */
+    --ifm-background-surface-color: #1e293b;
+    /* Slate 800 */
+}
+
+/* Navbar Polish */
+.navbar {
+    box-shadow: none;
+    border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+[data-theme='dark'] .navbar {
+    border-bottom: 1px solid var(--ifm-color-emphasis-100);
+}
+
+/* Hero Section Polish */
+.hero {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+/* Code Block Polish */
+.theme-code-block {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}

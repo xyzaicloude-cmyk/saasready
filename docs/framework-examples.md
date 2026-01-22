@@ -1,3 +1,8 @@
+---
+title: Framework Integration Examples
+description: Learn how to integrate SaaSReady with FastAPI, Django, and Flask. Practical code examples for multi-tenant authentication in Python.
+keywords: [fastapi multi-tenant example, django auth integration, flask rbac, python saas auth]
+---
 # Framework Integration Examples
 
 Examples for integrating SaaSReady authentication into popular Python frameworks.
@@ -305,4 +310,4 @@ def handle_rate_limit(e):
 
 - [API Reference](./api-reference.md) - All endpoints
 - [Features Guide](./features.md) - 2FA, sessions, email
-- [SDK Documentation](../SDK_README.md) - Full SDK reference
+- [SDK Documentation](https://github.com/ramprag/saasready/blob/main/SDK_README.md) - Full SDK reference

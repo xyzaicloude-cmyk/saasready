@@ -1,3 +1,8 @@
+---
+title: REST API Reference
+description: Complete REST API documentation for SaaSReady. Explore endpoints for authentication, organizations, members, and audit logs.
+keywords: [FastAPI API reference, auth API docs, multi-tenant API, SaaSReady REST API]
+---
 # API Reference
 
 > **Base URL**: `http://localhost:8000/api/v1`  

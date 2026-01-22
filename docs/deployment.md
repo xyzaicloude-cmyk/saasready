@@ -295,7 +295,7 @@ Configure your orchestrator/load balancer to use these endpoints.
 
 ## Security Hardening
 
-See [SECURITY.md](../SECURITY.md) for complete security guidelines including:
+See [SECURITY.md](https://github.com/ramprag/saasready/blob/main/SECURITY.md) for complete security guidelines including:
 - Security headers
 - Token storage recommendations
 - Compliance notes

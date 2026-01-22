@@ -37,9 +37,10 @@ build/
 venv/
 env/
 
-# Node.js (frontend)
+# Node.js (frontend & website)
 node_modules/
 .next/
+.docusaurus/
 out/
 
 # Logs
@@ -52,3 +53,7 @@ Thumbs.db
 
 # Docker
 *.sqlite3
+
+# Temporary Install Files
+node.zip
+nodeenv/

@@ -1,3 +1,8 @@
+---
+title: Troubleshooting & FAQs
+description: Solutions to common issues when setting up or running SaaSReady. Find answers to frequently asked questions about authentication and multi-tenancy.
+keywords: [SaaSReady troubleshooting, auth error fixes, multi-tenant auth faqs, self-hosted auth help]
+---
 # Troubleshooting
 
 Common issues and solutions for SaaSReady platform.

@@ -1,7 +1,7 @@
 # 🚀 SaaSReady - Enterprise-Grade Multi-Tenant Auth Platform
 
-> **Drop-in authentication infrastructure for B2B SaaS applications**  
-> Similar to Auth0, WorkOS, or Clerk, but **self-hosted** and **fully customizable**
+> **Open-source alternative to Auth0, WorkOS, and Clerk**  
+> Drop-in authentication infrastructure for B2B SaaS applications - **self-hosted**, **fully customizable**, and **free**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -256,6 +256,7 @@ client = SaaSReady(base_url="https://your-instance.com")
 
 | Document | Description |
 |----------|-------------|
+| [**Comparisons**](docs/comparisons/) | Compare with Auth0, WorkOS, Clerk, Firebase |
 | [**Setup Guide**](docs/setup-guide.md) | Environment, email, database, Redis |
 | [**API Reference**](docs/api-reference.md) | All endpoints with examples |
 | [**Features Guide**](docs/features.md) | 2FA, sessions, email verification |
