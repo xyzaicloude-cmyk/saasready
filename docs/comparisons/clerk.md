@@ -310,7 +310,7 @@ docker-compose up --build
 ### Resources
 - [📖 Full Documentation](../index.md)
 - [🚀 Quick Start Guide](../quickstart.md)
-- [🐍 Python SDK Reference](../../SDK_README.md)
+- [🐍 Python SDK Reference](https://github.com/ramprag/saasready/blob/master/SDK_README.md)
 - [🔄 Clerk Migration Guide](../migration/from-clerk.md)
 
 ---
